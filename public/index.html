@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+border-radius: 8px;
+cursor: pointer;
+}
+button:disabled { background: #94a3b8; }
+.result { margin-top: 1rem; padding: 1rem; border-radius: 8px; }
+.low { background: #ecfeff; }
+.medium { background: #fffbeb; }
+.high { background: #fef2f2; }
+footer {
+margin-top: 2rem;
+font-size: 0.85rem;
+color: #6b7280;
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Scam Verification Tool</h1>
+<p>Check whether a website, message, or digital interaction shows common scam indicators.</p>
+
+
+<input id="input" placeholder="Enter URL, domain, phone number, or message" />
+<button id="scanBtn">Run Scan</button>
+
+
+<div id="result"></div>
+
+
+<footer>
+<p>This tool provides a risk signal only. It does not guarantee legitimacy.</p>
+<p><a href="/DISCLAIMER.md">Disclaimer</a> · <a href="/PRIVACY.md">Privacy</a></p>
+</footer>
+</div>
+
+
+<script type="module">
+import { runScan } from '/src/engine/scan.js';
+
+
+const btn = document.getElementById('scanBtn');
+const input = document.getElementById('input');
+const result = document.getElementById('result');
+
+
+btn.addEventListener('click', async () => {
+result.innerHTML = 'Scanning…';
+btn.disabled = true;
+
+
+try {
+const response = await runScan(input.value);
+result.className = `result ${response.risk}`;
+result.innerHTML = `<strong>Risk Level:</strong> ${response.risk.toUpperCase()}<br/>${response.message}`;
+} catch (e) {
+result.className = 'result high';
+result.innerText = 'Unable to process scan.';
+} finally {
+btn.disabled = false;
+}
+});
+</script>
+</body>
+</html>
