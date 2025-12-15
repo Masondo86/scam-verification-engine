@@ -1,64 +1,197 @@
 <!DOCTYPE html>
-border-radius: 8px;
-cursor: pointer;
-}
-button:disabled { background: #94a3b8; }
-.result { margin-top: 1rem; padding: 1rem; border-radius: 8px; }
-.low { background: #ecfeff; }
-.medium { background: #fffbeb; }
-.high { background: #fef2f2; }
-footer {
-margin-top: 2rem;
-font-size: 0.85rem;
-color: #6b7280;
-}
-</style>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LinkSure Scam Verifier</title>
+
+  <style>
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: #f7f9fc;
+      margin: 0;
+      padding: 0;
+      color: #1f2937;
+    }
+
+    header {
+      background: #0f172a;
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    main {
+      max-width: 780px;
+      margin: auto;
+      padding: 2rem 1rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,.05);
+      margin-bottom: 1.5rem;
+    }
+
+    input, textarea, button {
+      width: 100%;
+      padding: 0.8rem;
+      margin-top: 0.5rem;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 1rem;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .score {
+      font-size: 3rem;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .safe { color: #16a34a; }
+    .medium { color: #ca8a04; }
+    .high { color: #dc2626; }
+
+    .tag {
+      display: inline-block;
+      padding: 0.3rem 0.6rem;
+      background: #e5e7eb;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      margin: 0.2rem;
+    }
+
+    .cta {
+      background: #fef3c7;
+      border-left: 6px solid #f59e0b;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-radius: 8px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+  </style>
 </head>
+
 <body>
-<div class="container">
-<h1>Scam Verification Tool</h1>
-<p>Check whether a website, message, or digital interaction shows common scam indicators.</p>
 
+<header>
+  <h1>🔍 LinkSure Scam Verifier</h1>
+  <p>Check suspicious websites, messages, phone numbers or emails — free.</p>
+</header>
 
-<input id="input" placeholder="Enter URL, domain, phone number, or message" />
-<button id="scanBtn">Run Scan</button>
+<main>
 
+  <!-- INPUT -->
+  <div class="card">
+    <h2>Check a suspicious item</h2>
 
-<div id="result"></div>
+    <select id="type">
+      <option value="url">Website / Link</option>
+      <option value="text">Message or Email Text</option>
+      <option value="phone">Phone Number</option>
+      <option value="email">Email Address</option>
+    </select>
 
+    <textarea id="input" rows="4" placeholder="Paste the link, message, phone number or email here"></textarea>
+    <button onclick="runScan()">Run Free Scam Check</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="card" id="results" style="display:none">
+    <h2>Scam Risk Assessment</h2>
+
+    <div id="score" class="score"></div>
+    <p id="summary"></p>
+
+    <h3>Key Signals Detected</h3>
+    <div id="signals"></div>
+
+    <h3>What this means</h3>
+    <p id="plainExplanation"></p>
+
+    <div class="cta">
+      <strong>Next Steps:</strong>
+      <ul>
+        <li>Do not send money or share OTPs</li>
+        <li>Contact your bank via official channels</li>
+        <li><strong>Run a full digital footprint scan</strong> to check device & account exposure</li>
+      </ul>
+    </div>
+  </div>
+
+</main>
 
 <footer>
-<p>This tool provides a risk signal only. It does not guarantee legitimacy.</p>
-<p><a href="/DISCLAIMER.md">Disclaimer</a> · <a href="/PRIVACY.md">Privacy</a></p>
+  © LinkSure • This tool provides risk indicators, not legal advice.
 </footer>
-</div>
 
+<script>
+async function runScan() {
+  const input = document.getElementById("input").value;
+  const type = document.getElementById("type").value;
 
-<script type="module">
-import { runScan } from '/src/engine/scan.js';
+  if (!input) {
+    alert("Please enter something to check");
+    return;
+  }
 
+  document.getElementById("results").style.display = "block";
+  document.getElementById("summary").innerText = "Scanning…";
 
-const btn = document.getElementById('scanBtn');
-const input = document.getElementById('input');
-const result = document.getElementById('result');
+  const res = await fetch("/api/analyze", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ input, type })
+  });
 
+  const data = await res.json();
 
-btn.addEventListener('click', async () => {
-result.innerHTML = 'Scanning…';
-btn.disabled = true;
+  const scoreEl = document.getElementById("score");
+  scoreEl.innerText = data.score + "%";
+  scoreEl.className = "score " + data.risk;
 
+  document.getElementById("summary").innerText =
+    data.risk === "safe"
+      ? "Low risk detected, but remain cautious."
+      : data.risk === "medium"
+      ? "Some scam indicators detected. Proceed carefully."
+      : "High scam risk detected. This appears dangerous.";
 
-try {
-const response = await runScan(input.value);
-result.className = `result ${response.risk}`;
-result.innerHTML = `<strong>Risk Level:</strong> ${response.risk.toUpperCase()}<br/>${response.message}`;
-} catch (e) {
-result.className = 'result high';
-result.innerText = 'Unable to process scan.';
-} finally {
-btn.disabled = false;
+  const signals = document.getElementById("signals");
+  signals.innerHTML = "";
+
+  if (data.social?.summary) {
+    const tag = document.createElement("span");
+    tag.className = "tag";
+    tag.innerText = data.social.summary;
+    signals.appendChild(tag);
+  }
+
+  document.getElementById("plainExplanation").innerText =
+    data.social?.summary ||
+    "No common scam manipulation patterns were detected.";
 }
-});
 </script>
+
 </body>
 </html>
