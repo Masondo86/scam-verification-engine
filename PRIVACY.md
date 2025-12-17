@@ -1,6 +1,7 @@
 Privacy Notice
 
 This Privacy Notice explains how limited data is handled when using the Scam Verification Engine.
+We use privacy-friendly, cookie-less analytics for aggregate usage insights
 
 Information We Process
 
