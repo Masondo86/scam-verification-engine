@@ -1,66 +1,107 @@
-Privacy Notice
+PRIVACY POLICY – LinkSure Scam Verification Engine
 
-This Privacy Notice explains how limited data is handled when using the Scam Verification Engine.
-We use privacy-friendly, cookie-less analytics for aggregate usage insights
+Last updated: 2025-01-XX
 
-Information We Process
+LinkSure (“we”, “us”, “our”) operates the Scam Verification Engine, a free public tool designed to help users identify potential scams, fraud, phishing, vishing, and impersonation attempts.
 
-The tool may process the following non-sensitive information submitted by users:
+We are committed to protecting your personal information in accordance with the Protection of Personal Information Act (POPIA), Act 4 of 2013.
 
-URLs, domains, phone numbers, or message content provided for analysis
+1. Information We Collect
 
-Technical metadata necessary to operate the service (e.g. timestamps)
+We collect minimal data only:
 
-Users should not submit:
+Automatically collected (non-identifying):
+
+IP address (anonymized)
+
+Device and browser type
+
+Scan metadata (type of scan, timestamp)
+
+User-provided (optional):
+
+Email address (only if you opt in)
+
+Scam reports submitted voluntarily
+
+We do not collect:
 
 Identity numbers
 
-Banking details
+Banking credentials
 
-Passwords or authentication information
+Passwords
 
-Special personal information as defined by POPIA
+OTPs
 
-Purpose of Processing
+2. Purpose of Collection
 
-Information is processed solely to:
+Your data is used to:
 
-Perform scam-risk analysis
+Provide scam risk analysis
 
-Improve detection heuristics
+Improve scam detection accuracy
 
-Produce anonymised, aggregated statistics
+Maintain community scam statistics
 
-Data Retention
+Send safety alerts or educational updates (email opt-in only)
 
-Submissions are processed transiently
+3. Email Capture & Consent
 
-No permanent user profiles are created
+Emails are collected only with explicit consent and used for:
 
-Aggregated metrics may be retained without identifying individuals
+Scam alerts
 
-Data Sharing
+Security education
 
-We do not sell personal information.
+Product updates
 
-Data may only be shared:
+You may unsubscribe at any time.
 
-Where required by law
+4. Data Sharing
 
-In anonymised and aggregated form for research or public awareness
+We do not sell personal data.
 
-POPIA Compliance
+We may share aggregated, anonymized statistics with:
 
-Processing is conducted in line with the Protection of Personal Information Act (POPIA) of South Africa.
+Law enforcement
 
-Users consent to this limited processing by using the tool.
+Banking partners
 
-Changes to This Notice
+Cybersecurity researchers
 
-This notice may be updated periodically. Continued use of the tool constitutes acceptance of the latest version.
+5. Data Retention
 
-Contact
+Scan metadata: up to 12 months
 
-For privacy-related questions or requests:
+Email records: until opt-out
 
-Email: privacy@yourdomain.za
+Community reports: anonymized indefinitely
+
+6. Your Rights (POPIA)
+
+You may:
+
+Request access to your data
+
+Request correction or deletion
+
+Withdraw consent
+
+Contact: privacy@YOURDOMAIN.co.za
+
+7. Security Measures
+
+We implement:
+
+Encryption at rest and in transit
+
+Rate limiting
+
+Abuse detection
+
+Secure API key management
+
+8. Disclaimer
+
+This tool provides risk indicators only and does not replace professional, banking, or law enforcement advice.
