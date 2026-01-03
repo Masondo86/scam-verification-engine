@@ -66,4 +66,4 @@ Contact
 
 For responsible disclosure, partnerships, or questions:
 
-Email: security@yourdomain.za
+Email: security@checkascam.za
