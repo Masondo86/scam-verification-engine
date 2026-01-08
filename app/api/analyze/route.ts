@@ -1,39 +1,61 @@
-import { NextResponse } from "next/server";
-import { rateLimit } from "../../lib/rateLimit";
-import { whoisLookup } from "@/app/services/whois";
-import { checkSafeBrowsing } from "@/app/services/safebrowsing";
-import { detectZAFraud } from "@/app/services/zaBankRules";
-import { calculateScore } from "@/app/services/scoring";
+import { NextResponse } from 'next/server';
+import { rateLimit } from '@/app/lib/ratelimit';
+import { calculateScore } from '@/app/lib/scoring';
+import { lookupWhois } from '@/app/lib/whois';
+import { checkBlacklist } from '@/app/lib/blacklist';
+import { analyzeSocialSignals } from '@/app/lib/social';
 
 export async function POST(req: Request) {
-  const ip = req.headers.get("x-forwarded-for") || "anonymous";
-  const { success } = await rateLimit.limit(ip);
-  if (!success) return new Response("Too many requests", { status: 429 });
+  try {
+    // ---- Rate limiting (IP-based) ----
+    const ip =
+      req.headers.get('x-forwarded-for')?.split(',')[0] ??
+      '127.0.0.1';
 
-  const { input, type } = await req.json();
+    const { success } = await rateLimit.limit(ip);
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please slow down.' },
+        { status: 429 }
+      );
+    }
 
-  const whois = type === "url" ? await whoisLookup(input) : null;
-  const blacklist = type === "url" ? await checkSafeBrowsing(input) : [];
-  const social = detectZAFraud(input, input);
+    // ---- Parse request ----
+    const body = await req.json();
+    const { input } = body;
 
-  const result = calculateScore({
-    domainAge: whois?.domainAgeDays,
-    blacklist: blacklist.length > 0,
-    social: social.length,
-  });
+    if (!input || typeof input !== 'string') {
+      return NextResponse.json(
+        { error: 'Invalid input' },
+        { status: 400 }
+      );
+    }
 
-  return NextResponse.json({
-    ...result,
-    tech: whois,
-    social: {
-      summary:
-        social.length > 0 ? `This scam uses ${social.join(", ")}` : "No manipulation patterns detected",
-    },
-    community: { count: 0 },
-    nextSteps: [
-      "Do not send money",
-      "Contact your bank via official channels",
-      "Run a full digital footprint scan",
-    ],
-  });
+    // ---- Intelligence gathering ----
+    const whois = await lookupWhois(input);
+    const blacklist = await checkBlacklist(input);
+    const social = await analyzeSocialSignals(input);
+
+    // ---- ✅ FIX HERE: normalize null → undefined ----
+    const result = calculateScore({
+      domainAge: whois?.domainAgeDays ?? undefined,
+      blacklist: blacklist.length > 0,
+      social: social.length,
+    });
+
+    // ---- Response ----
+    return NextResponse.json({
+      score: result.score,
+      riskLevel: result.riskLevel,
+      timeline: result.timeline,
+      heatmap: result.heatmap,
+      banks: result.banks,
+    });
+  } catch (error) {
+    console.error('Analyze API error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
 }
