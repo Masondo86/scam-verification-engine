@@ -3,14 +3,6 @@ const nextConfig = {
   reactStrictMode: true,
 
   /**
-   * App Router is already enabled by default in Next 13+
-   * Keeping config explicit for audit clarity
-   */
-  experimental: {
-    appDir: true
-  },
-
-  /**
    * Security headers – critical for fraud / banking tooling
    */
   async headers() {
