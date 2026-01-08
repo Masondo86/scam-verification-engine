@@ -1,4 +1,5 @@
-import { rateLimit } from "@/app/lib/rateLimit";
+import { NextResponse } from "next/server";
+import { rateLimit } from "../../lib/rateLimit";
 import { whoisLookup } from "@/app/services/whois";
 import { checkSafeBrowsing } from "@/app/services/safebrowsing";
 import { detectZAFraud } from "@/app/services/zaBankRules";
@@ -7,8 +8,7 @@ import { calculateScore } from "@/app/services/scoring";
 export async function POST(req: Request) {
   const ip = req.headers.get("x-forwarded-for") || "anonymous";
   const { success } = await rateLimit.limit(ip);
-  if (!success)
-    return new Response("Too many requests", { status: 429 });
+  if (!success) return new Response("Too many requests", { status: 429 });
 
   const { input, type } = await req.json();
 
@@ -22,14 +22,12 @@ export async function POST(req: Request) {
     social: social.length,
   });
 
-  return Response.json({
+  return NextResponse.json({
     ...result,
     tech: whois,
     social: {
       summary:
-        social.length > 0
-          ? `This scam uses ${social.join(", ")}`
-          : "No manipulation patterns detected",
+        social.length > 0 ? `This scam uses ${social.join(", ")}` : "No manipulation patterns detected",
     },
     community: { count: 0 },
     nextSteps: [
