@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { rateLimit } from '@/app/lib/rateLimit';
+import { rateLimit } from '@/app/lib/ratelimit';
 import { calculateScore } from '@/app/services/scoring';
 import { lookupWhois } from '@/app/services/whois';
 import { analyzeSocialSignals } from '@/app/services/socialengineering';
