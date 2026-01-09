@@ -1,4 +1,4 @@
-// app/services/socialEngineering.ts
+// app/services/socialengineering.ts
 
 export type SocialEngineeringSignals = {
   urgency: boolean;
@@ -63,26 +63,25 @@ export function analyzeSocialEngineering(
   input: string
 ): SocialEngineeringSignals {
   const text = input.toLowerCase();
-
   const indicators: string[] = [];
 
   const urgency = URGENCY_PATTERNS.some(p => p.test(text));
-  if (urgency) indicators.push("Urgency language detected");
+  if (urgency) indicators.push('Urgency language detected');
 
   const fear = FEAR_PATTERNS.some(p => p.test(text));
-  if (fear) indicators.push("Fear-based threat language detected");
+  if (fear) indicators.push('Fear-based threat language detected');
 
   const authority = AUTHORITY_PATTERNS.some(p => p.test(text));
-  if (authority) indicators.push("Authority impersonation signals");
+  if (authority) indicators.push('Authority impersonation signals');
 
   const reward = REWARD_PATTERNS.some(p => p.test(text));
-  if (reward) indicators.push("Reward / prize bait language");
+  if (reward) indicators.push('Reward / prize bait language');
 
   const otpScam = OTP_PATTERNS.some(p => p.test(text));
-  if (otpScam) indicators.push("OTP harvesting attempt");
+  if (otpScam) indicators.push('OTP harvesting attempt');
 
   const paymentRedirection = PAYMENT_PATTERNS.some(p => p.test(text));
-  if (paymentRedirection) indicators.push("Payment redirection request");
+  if (paymentRedirection) indicators.push('Payment redirection request');
 
   const impersonation = authority && (urgency || fear);
 
@@ -119,20 +118,20 @@ function generateSummary(flags: {
   impersonation: boolean;
 }): string {
   if (flags.impersonation && flags.otpScam) {
-    return "This message imitates a trusted institution and requests an OTP — a common banking fraud pattern.";
+    return 'Impersonates a trusted institution and requests an OTP — a common banking scam.';
   }
 
   if (flags.impersonation && flags.paymentRedirection) {
-    return "This content impersonates an authority and attempts to redirect payments, consistent with financial scams.";
+    return 'Impersonates an authority and attempts to redirect payments.';
   }
 
   if (flags.urgency && flags.fear) {
-    return "This message uses urgency and fear tactics to pressure immediate action.";
+    return 'Uses urgency and fear tactics to pressure immediate action.';
   }
 
   if (flags.reward) {
-    return "This message promises rewards or refunds — a frequent lure used in scams.";
+    return 'Promises rewards or refunds — a frequent scam lure.';
   }
 
-  return "No strong social-engineering manipulation patterns were detected.";
+  return 'No strong social-engineering manipulation patterns detected.';
 }
