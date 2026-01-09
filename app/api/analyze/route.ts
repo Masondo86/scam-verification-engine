@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 
 import { rateLimit } from '@/app/lib/ratelimit';
 import { calculateScore } from '@/app/services/scoring';
-import { lookupWhois } from '@/app/services/whois';
-import { analyzeSocialSignals } from '@/app/services/socialengineering';
+import { whoisLookup } from '@/app/services/whois';
+import { analyzeSocialEngineering } from '@/app/services/socialengineering';
 
 export async function POST(req: Request) {
   try {
@@ -32,14 +32,14 @@ export async function POST(req: Request) {
     }
 
     // ---- Intelligence gathering ----
-    const whois = await lookupWhois(input);
-    const social = await analyzeSocialSignals(input);
+    const whois = await whoisLookup(input);
+    const social = analyzeSocialEngineering(input);
 
     // ---- Scoring (null-safe) ----
     const result = calculateScore({
       domainAge: whois?.domainAgeDays ?? undefined,
-      blacklist: false, // placeholder (removed old blacklist engine)
-      social: social.length,
+      blacklist: false, // placeholder
+      social: social.indicators.length,
     });
 
     // ---- Response ----
