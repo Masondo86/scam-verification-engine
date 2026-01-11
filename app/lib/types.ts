@@ -13,6 +13,26 @@ export interface RiskBreakdown {
 export interface BankWarning {
   bank: string;
   message: string;
+  severity: "high" | "medium" | "low";
+}
+
+export interface TimelineEvent {
+  date: string;
+  event: string;
+  severity: "info" | "warning" | "danger";
+}
+
+export interface HeatmapData {
+  category: string;
+  intensity: number;
+  description: string;
+}
+
+export interface BankCheck {
+  detected: boolean;
+  legitimateBanks: string[];
+  warnings: BankWarning[];
+  isImpersonation: boolean;
 }
 
 export interface AnalyzeResponse {
@@ -21,16 +41,13 @@ export interface AnalyzeResponse {
   score: number;
   riskLevel: "safe" | "medium" | "high";
   confidence: number;
-
   explanation: string;
-
   riskBreakdown: RiskBreakdown;
-
   community: {
     reportCount: number;
   };
-
-  bankWarning?: BankWarning;
-
+  timeline: TimelineEvent[];
+  heatmap: HeatmapData[];
+  bankCheck: BankCheck;
   screenshotUrl?: string;
 }
