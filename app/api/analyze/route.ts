@@ -4,6 +4,8 @@ import { calculateScore } from '@/app/services/scoring';
 import { whoisLookup } from '@/app/services/whois';
 import { analyzeSocialEngineering } from '@/app/services/socialengineering';
 import { detectZAFraud, getLegitimateZABanks } from '@/app/services/zaBankRules';
+import { checkSafeBrowsing } from '@/app/services/safebrowsing';
+import { checkIP, resolveIPFromDomain } from '@/app/services/abuseipdb';
 
 export async function POST(req: Request) {
   try {
@@ -38,39 +40,56 @@ export async function POST(req: Request) {
       .toLowerCase()
       .trim();
 
-    // ---- Intelligence gathering ----
-    const whois = await whoisLookup(input);
-    const social = analyzeSocialEngineering(input);
-    
+    // ---- Parallel Intelligence Gathering (Free Tier Optimized) ----
+    const [whois, social, safeBrowsing] = await Promise.all([
+      whoisLookup(input),
+      Promise.resolve(analyzeSocialEngineering(input)),
+      checkSafeBrowsing(input),
+    ]);
+
+    // Resolve IP and check abuse (sequential to avoid rate limits)
+    let abuseData = null;
+    try {
+      const resolvedIP = await resolveIPFromDomain(domain);
+      if (resolvedIP) {
+        abuseData = await checkIP(resolvedIP);
+      }
+    } catch (error) {
+      console.warn('IP resolution/abuse check failed:', error);
+    }
+
     // Check for bank fraud patterns
     const bankDetection = detectZAFraud(input, domain);
 
-    // Calculate registration date if domain age is available
+    // Calculate registration date
     const registrationDate = whois?.domainAgeDays 
       ? new Date(Date.now() - whois.domainAgeDays * 86400000).toISOString()
       : undefined;
 
-    // ---- Scoring with comprehensive signals ----
+    // ---- Comprehensive Scoring ----
     const result = calculateScore({
       domainAge: whois?.domainAgeDays ?? undefined,
-      blacklist: false, // TODO: Integrate with safebrowsing.ts for real blacklist checking
+      blacklist: safeBrowsing.isBlacklisted,
+      blacklistThreats: safeBrowsing.threats,
       social: social.indicators.length,
-      abuseScore: undefined, // TODO: Integrate with abuseipdb.ts when IP is extracted
-      country: whois?.country,
+      abuseScore: abuseData?.abuseScore ?? undefined,
+      abuseReports: abuseData?.totalReports ?? undefined,
+      country: whois?.country || abuseData?.country,
       bankImpersonation: bankDetection.isImpersonation,
       threatIndicatorCount: bankDetection.threatIndicators.length,
       registrationDate,
+      lastAbuseReport: abuseData?.lastReportedAt ?? null,
     });
 
-    // ---- Build comprehensive response ----
+    // ---- Build Comprehensive Response ----
     return NextResponse.json({
       // Core risk assessment
       score: result.score,
       riskLevel: result.risk,
       explanation: result.explanation,
-      confidence: result.score, // Using score as confidence for now
+      confidence: result.score,
       
-      // Domain information
+      // Target information
       target: domain,
       type: 'url' as const,
       
@@ -80,7 +99,7 @@ export async function POST(req: Request) {
       // Heatmap of risk factors
       heatmap: result.heatmap,
       
-      // Bank fraud detection
+      // Bank fraud detection (SA-specific)
       bankCheck: {
         detected: bankDetection.detectedBanks.length > 0,
         legitimateBanks: getLegitimateZABanks(),
@@ -96,6 +115,21 @@ export async function POST(req: Request) {
         country: whois?.country,
       },
       
+      // Security intelligence
+      safeBrowsing: {
+        isBlacklisted: safeBrowsing.isBlacklisted,
+        threats: safeBrowsing.threats,
+      },
+      
+      // Abuse intelligence
+      abuseIPDB: abuseData ? {
+        abuseScore: abuseData.abuseScore,
+        totalReports: abuseData.totalReports,
+        country: abuseData.country,
+        isp: abuseData.isp,
+        lastReportedAt: abuseData.lastReportedAt,
+      } : null,
+      
       // Social engineering analysis
       socialEngineering: {
         indicators: social.indicators,
@@ -104,21 +138,20 @@ export async function POST(req: Request) {
       
       // Risk breakdown
       riskBreakdown: {
-        technical: whois?.domainAgeDays && whois.domainAgeDays < 90 ? 70 : 20,
-        socialEngineering: social.indicators.length > 0 ? social.indicators.length * 30 : 10,
-        community: 15, // Placeholder until abuse reports are integrated
+        technical: safeBrowsing.isBlacklisted ? 100 : (whois?.domainAgeDays && whois.domainAgeDays < 90 ? 70 : 20),
+        socialEngineering: social.indicators.length > 0 ? Math.min(social.indicators.length * 30, 100) : 10,
+        community: abuseData?.abuseScore || 0,
       },
       
-      // Community data (placeholder)
+      // Community data
       community: {
-        reportCount: 0, // TODO: Integrate with abuse reporting system
+        reportCount: abuseData?.totalReports || 0,
       },
     });
     
   } catch (error) {
     console.error('Analyze API error:', error);
     
-    // Provide more detailed error information in development
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     
     return NextResponse.json(
