@@ -12,13 +12,13 @@ export const metadata: Metadata = {
     'South Africa scams',
     'bank fraud',
     'phishing detection',
-    'LinkSure'
+    'The Link Digital Security'
   ],
   openGraph: {
-    title: 'LinkSure Scam Verification Engine',
+    title: 'The Link Digital Security - Scam Verification Engine',
     description: 'Free public scam detection tool for South Africa',
     url: 'https://checkascam.co.za',
-    siteName: 'LinkSure',
+    siteName: 'The Link Digital Security',
     locale: 'en_ZA',
     type: 'website'
   }
@@ -47,7 +47,7 @@ export default function RootLayout({
                 'Free public scam verification tool for checking websites, phone numbers, emails and messages for fraud, phishing and impersonation scams in South Africa.',
               publisher: {
                 '@type': 'Organization',
-                name: 'LinkSure',
+                name: 'The Link Digital Security',
                 url: 'https://checkascam.co.za'
               },
               areaServed: {
