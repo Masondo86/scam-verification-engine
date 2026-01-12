@@ -33,6 +33,31 @@ export interface BankCheck {
   legitimateBanks: string[];
   warnings: BankWarning[];
   isImpersonation: boolean;
+  threatIndicators?: string[]; // Added this field
+}
+
+export interface WhoisData {
+  domainAge?: number;
+  registrar?: string;
+  country?: string;
+}
+
+export interface SafeBrowsingData {
+  isBlacklisted: boolean;
+  threats: string[];
+}
+
+export interface AbuseIPDBData {
+  abuseScore: number;
+  totalReports: number;
+  country: string;
+  isp: string;
+  lastReportedAt: string | null;
+}
+
+export interface SocialEngineeringData {
+  indicators: string[];
+  count: number;
 }
 
 export interface AnalyzeResponse {
@@ -49,5 +74,9 @@ export interface AnalyzeResponse {
   timeline: TimelineEvent[];
   heatmap: HeatmapData[];
   bankCheck: BankCheck;
+  whois?: WhoisData;
+  safeBrowsing?: SafeBrowsingData;
+  abuseIPDB?: AbuseIPDBData | null;
+  socialEngineering?: SocialEngineeringData;
   screenshotUrl?: string;
 }
