@@ -3,23 +3,29 @@
 import { useState } from 'react';
 import type { AnalyzeResponse } from '@/app/lib/types';
 
-export default function ScanPage() {
+const BANK_HELP: Record<string, string> = {
+  capitec: 'https://www.capitecbank.co.za/security-centre/',
+  fnb: 'https://www.fnb.co.za/security/',
+  absa: 'https://www.absa.co.za/absaafrica/security-centre/',
+  standard: 'https://www.standardbank.co.za/southafrica/personal/security-centre',
+  nedbank: 'https://www.nedbank.co.za/content/nedbank/desktop/gt/en/security-centre.html',
+};
+
+export default function Page() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<AnalyzeResponse | null>(null);
+  const [data, setData] = useState<AnalyzeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleScan = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  async function analyze() {
     if (!input.trim()) {
       setError('Please enter a URL, phone number, email, or message');
       return;
     }
 
     setLoading(true);
+    setData(null);
     setError(null);
-    setResult(null);
 
     try {
       const res = await fetch('/api/analyze', {
@@ -33,245 +39,315 @@ export default function ScanPage() {
         throw new Error(errorData.error || 'Analysis failed');
       }
 
-      const data = await res.json();
-      setResult(data);
+      const result = await res.json();
+      setData(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const getRiskColor = (level: string) => {
-    switch (level) {
-      case 'safe': return 'text-green-600 bg-green-50 border-green-200';
-      case 'medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case 'high': return 'text-red-600 bg-red-50 border-red-200';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200';
-    }
-  };
-
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'danger': return 'bg-red-100 text-red-800 border-red-300';
-      case 'warning': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'info': return 'bg-blue-100 text-blue-800 border-blue-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
-    }
-  };
+  const circumference = 2 * Math.PI * 45;
+  const offset = data
+    ? circumference - (data.score / 100) * circumference
+    : circumference;
 
   return (
-    <main className="min-h-screen px-6 py-12 max-w-6xl mx-auto">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+    <main className="max-w-7xl mx-auto px-4 py-10" aria-live="polite">
+
+      {/* HEADER */}
+      <header className="text-center mb-12">
+        <h1 className="text-5xl font-extrabold text-glow bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
           Scam Verification Engine
         </h1>
-        <p className="text-gray-600 text-lg">
+        <p className="text-slate-400 mt-3">
           Understand risk. Stop fraud. Stay protected.
         </p>
-      </div>
+      </header>
 
-      {/* Scan Form */}
-      <form onSubmit={handleScan} className="mb-8">
-        <div className="flex gap-3">
+      {/* INPUT */}
+      <section className="glass-panel p-6 shadow-indigo">
+        <label htmlFor="scanInput" className="sr-only">
+          Scam search input
+        </label>
+        <div className="flex flex-col md:flex-row gap-4">
           <input
-            type="text"
+            id="scanInput"
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && analyze()}
+            className="flex-1 bg-slate-900/70 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             placeholder="URL, phone number, email or message text"
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             disabled={loading}
           />
           <button
-            type="submit"
+            onClick={analyze}
             disabled={loading}
-            className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+            className="btn-3d bg-gradient-to-r from-indigo-500 to-purple-600 border-b-indigo-900 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Analyzing...' : 'Analyze'}
+            {loading ? 'Scanning…' : 'Analyze'}
           </button>
         </div>
-      </form>
+      </section>
 
-      {/* Error Message */}
+      {/* ERROR MESSAGE */}
       {error && (
-        <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-600 font-medium">⚠️ {error}</p>
-        </div>
+        <section className="mt-6 glass-panel p-4 border-red-500/50 shadow-lg">
+          <p className="text-red-400 font-medium">⚠️ {error}</p>
+        </section>
       )}
 
-      {/* Results */}
-      {result && (
-        <div className="space-y-6">
-          {/* Risk Score Card */}
-          <div className={`p-6 border-2 rounded-lg ${getRiskColor(result.riskLevel)}`}>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-2xl font-bold mb-1">
-                  Risk Level: {result.riskLevel.toUpperCase()}
-                </h2>
-                <p className="text-sm opacity-80">{result.explanation}</p>
-              </div>
-              <div className="text-right">
-                <div className="text-5xl font-bold">{result.score}</div>
-                <div className="text-sm">/ 100</div>
-              </div>
-            </div>
-            <div className="w-full bg-white bg-opacity-50 rounded-full h-3 overflow-hidden">
-              <div
-                className="h-full bg-current transition-all duration-500"
-                style={{ width: `${result.score}%` }}
-              />
-            </div>
-          </div>
+      {data && (
+        <>
+          {/* MAIN RESULTS GRID */}
+          <section className="mt-10 grid lg:grid-cols-3 gap-6">
 
-          {/* Bank Warnings */}
-          {result.bankCheck && result.bankCheck.warnings.length > 0 && (
-            <div className="p-6 bg-red-50 border-2 border-red-200 rounded-lg">
-              <h3 className="text-xl font-bold text-red-800 mb-4 flex items-center gap-2">
+            {/* SCORE GAUGE */}
+            <div className="glass-panel p-6 text-center">
+              <svg
+                width="120"
+                height="120"
+                className="mx-auto gauge"
+                role="img"
+                aria-label={`Scam confidence score ${data.score} out of 100`}
+              >
+                <circle r="45" cx="60" cy="60" className="gauge-bg" />
+                <circle
+                  r="45"
+                  cx="60"
+                  cy="60"
+                  className="gauge-value"
+                  stroke="url(#grad)"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={offset}
+                />
+                <defs>
+                  <linearGradient id="grad">
+                    <stop offset="0%" stopColor="#6366f1" />
+                    <stop offset="100%" stopColor="#22d3ee" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="text-4xl font-bold mt-4 text-white">{data.score}</div>
+              <div className={`text-sm font-semibold uppercase mt-2 ${
+                data.riskLevel === 'high' ? 'text-red-400' :
+                data.riskLevel === 'medium' ? 'text-yellow-400' :
+                'text-green-400'
+              }`}>
+                {data.riskLevel}
+              </div>
+              <p className="text-slate-400 text-sm mt-3">{data.explanation}</p>
+            </div>
+
+            {/* THREAT TIMELINE */}
+            <div className="glass-panel p-6">
+              <h3 className="font-bold mb-4 text-indigo-300">Threat Timeline</h3>
+              <div className="timeline">
+                {data.timeline && data.timeline.length > 0 ? (
+                  data.timeline.slice(0, 5).map((t, i) => (
+                    <div key={i} className={`timeline-item text-sm ${
+                      t.severity === 'danger' ? 'text-red-300' :
+                      t.severity === 'warning' ? 'text-yellow-300' :
+                      'text-slate-300'
+                    }`}>
+                      <strong>{new Date(t.date).toLocaleDateString('en-ZA', { 
+                        month: 'short', 
+                        day: 'numeric' 
+                      })}</strong> — {t.event}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-slate-400 text-sm">No timeline data available</p>
+                )}
+              </div>
+            </div>
+
+            {/* RISK HEATMAP */}
+            <div className="glass-panel p-6">
+              <h3 className="font-bold mb-4 text-purple-300">Risk Factors</h3>
+              {data.heatmap && data.heatmap.length > 0 ? (
+                <div className="space-y-3">
+                  {data.heatmap.slice(0, 5).map((item, i) => (
+                    <div key={i}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-slate-300">{item.category}</span>
+                        <span className="text-slate-400">{item.intensity}%</span>
+                      </div>
+                      <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                        <div
+                          className="h-full transition-all duration-500"
+                          style={{
+                            width: `${item.intensity}%`,
+                            background: item.intensity > 75 ? '#ef4444' :
+                                      item.intensity > 40 ? '#f59e0b' :
+                                      '#10b981'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-slate-400 text-sm">No risk factors detected</p>
+              )}
+            </div>
+          </section>
+
+          {/* BANK FRAUD WARNINGS */}
+          {data.bankCheck && data.bankCheck.warnings && data.bankCheck.warnings.length > 0 && (
+            <section className="mt-6 glass-panel p-6 border-red-500/50 shadow-lg">
+              <h3 className="font-bold text-red-400 mb-4 flex items-center gap-2 text-lg">
                 🏦 Bank Fraud Alert
               </h3>
-              {result.bankCheck.warnings.map((warning, idx) => (
-                <div key={idx} className="mb-3 p-3 bg-white rounded border border-red-200">
-                  <div className="font-semibold text-red-700">{warning.bank}</div>
-                  <div className="text-sm text-red-600">{warning.message}</div>
+              {data.bankCheck.warnings.map((warning, idx) => (
+                <div key={idx} className="mb-3 p-4 bg-red-500/10 rounded-lg border border-red-500/30">
+                  <div className="font-semibold text-red-300 text-lg">{warning.bank}</div>
+                  <div className="text-red-200 text-sm mt-1">{warning.message}</div>
+                  <div className={`inline-block mt-2 px-2 py-1 rounded text-xs font-semibold ${
+                    warning.severity === 'high' ? 'bg-red-600 text-white' :
+                    warning.severity === 'medium' ? 'bg-yellow-600 text-white' :
+                    'bg-blue-600 text-white'
+                  }`}>
+                    {warning.severity.toUpperCase()} RISK
+                  </div>
                 </div>
               ))}
-              {result.bankCheck.threatIndicators && result.bankCheck.threatIndicators.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-red-200">
-                  <div className="font-semibold text-red-800 mb-2">Threat Indicators:</div>
-                  <ul className="list-disc list-inside space-y-1 text-red-600 text-sm">
-                    {result.bankCheck.threatIndicators.map((indicator, idx) => (
+              
+              {data.bankCheck.threatIndicators && data.bankCheck.threatIndicators.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-red-500/30">
+                  <div className="font-semibold text-red-300 mb-2">Threat Indicators:</div>
+                  <ul className="list-disc list-inside space-y-1 text-red-200 text-sm">
+                    {data.bankCheck.threatIndicators.map((indicator, idx) => (
                       <li key={idx}>{indicator}</li>
                     ))}
                   </ul>
                 </div>
               )}
-            </div>
+            </section>
           )}
 
-          {/* Timeline */}
-          {result.timeline && result.timeline.length > 0 && (
-            <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
-              <h3 className="text-xl font-bold mb-4">📅 Timeline</h3>
-              <div className="space-y-3">
-                {result.timeline.map((event, idx) => (
-                  <div key={idx} className={`p-3 rounded border ${getSeverityColor(event.severity)}`}>
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="flex-1">
-                        <div className="font-medium">{event.event}</div>
-                      </div>
-                      <div className="text-xs opacity-75 whitespace-nowrap">
-                        {new Date(event.date).toLocaleDateString('en-ZA', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </div>
+          {/* SECURITY INTELLIGENCE */}
+          <section className="mt-6 grid md:grid-cols-2 gap-6">
+            {/* Google Safe Browsing */}
+            {data.safeBrowsing && (
+              <div className="glass-panel p-6">
+                <h3 className="font-bold mb-3 text-indigo-300">🔒 Google Safe Browsing</h3>
+                {data.safeBrowsing.isBlacklisted ? (
+                  <div className="space-y-2">
+                    <div className="text-red-400 font-semibold text-lg">⛔ BLACKLISTED</div>
+                    <div className="text-red-300 text-sm">
+                      Threats: {data.safeBrowsing.threats.join(', ')}
                     </div>
                   </div>
-                ))}
+                ) : (
+                  <div className="text-green-400 font-semibold">✅ Clean</div>
+                )}
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Heatmap */}
-          {result.heatmap && result.heatmap.length > 0 && (
-            <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
-              <h3 className="text-xl font-bold mb-4">🗺️ Risk Factors</h3>
-              <div className="space-y-3">
-                {result.heatmap.map((item, idx) => (
-                  <div key={idx} className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">{item.category}</span>
-                      <span className="text-sm text-gray-500">{item.intensity}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                      <div
-                        className={`h-full transition-all duration-500 ${
-                          item.intensity > 75 ? 'bg-red-500' :
-                          item.intensity > 40 ? 'bg-yellow-500' :
-                          'bg-green-500'
-                        }`}
-                        style={{ width: `${item.intensity}%` }}
-                      />
-                    </div>
-                    <p className="text-sm text-gray-600">{item.description}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Technical Details */}
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* WHOIS Info */}
-            {result.whois && (
-              <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
-                <h3 className="text-lg font-bold mb-4">🌐 Domain Information</h3>
+            {/* AbuseIPDB */}
+            {data.abuseIPDB && (
+              <div className="glass-panel p-6">
+                <h3 className="font-bold mb-3 text-purple-300">👥 Community Reports</h3>
                 <dl className="space-y-2 text-sm">
-                  {result.whois.domainAge !== undefined && (
-                    <>
-                      <dt className="font-semibold text-gray-700">Domain Age</dt>
-                      <dd className="text-gray-600 mb-3">{result.whois.domainAge} days</dd>
-                    </>
+                  <div>
+                    <dt className="text-slate-400">Abuse Score</dt>
+                    <dd className={`font-semibold ${
+                      data.abuseIPDB.abuseScore > 75 ? 'text-red-400' :
+                      data.abuseIPDB.abuseScore > 25 ? 'text-yellow-400' :
+                      'text-green-400'
+                    }`}>
+                      {data.abuseIPDB.abuseScore}%
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-400">Total Reports</dt>
+                    <dd className="text-white">{data.abuseIPDB.totalReports}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-400">ISP</dt>
+                    <dd className="text-white">{data.abuseIPDB.isp}</dd>
+                  </div>
+                </dl>
+              </div>
+            )}
+
+            {/* WHOIS */}
+            {data.whois && (
+              <div className="glass-panel p-6">
+                <h3 className="font-bold mb-3 text-emerald-300">🌐 Domain Info</h3>
+                <dl className="space-y-2 text-sm">
+                  {data.whois.domainAge !== undefined && (
+                    <div>
+                      <dt className="text-slate-400">Domain Age</dt>
+                      <dd className="text-white">{data.whois.domainAge} days</dd>
+                    </div>
                   )}
-                  {result.whois.registrar && (
-                    <>
-                      <dt className="font-semibold text-gray-700">Registrar</dt>
-                      <dd className="text-gray-600 mb-3">{result.whois.registrar}</dd>
-                    </>
+                  {data.whois.registrar && (
+                    <div>
+                      <dt className="text-slate-400">Registrar</dt>
+                      <dd className="text-white">{data.whois.registrar}</dd>
+                    </div>
                   )}
-                  {result.whois.country && (
-                    <>
-                      <dt className="font-semibold text-gray-700">Country</dt>
-                      <dd className="text-gray-600">{result.whois.country}</dd>
-                    </>
+                  {data.whois.country && (
+                    <div>
+                      <dt className="text-slate-400">Country</dt>
+                      <dd className="text-white">{data.whois.country}</dd>
+                    </div>
                   )}
                 </dl>
               </div>
             )}
 
-            {/* Security Info */}
-            <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
-              <h3 className="text-lg font-bold mb-4">🔒 Security Checks</h3>
-              <dl className="space-y-2 text-sm">
-                {result.safeBrowsing && (
-                  <>
-                    <dt className="font-semibold text-gray-700">Google Safe Browsing</dt>
-                    <dd className={`mb-3 ${result.safeBrowsing.isBlacklisted ? 'text-red-600 font-semibold' : 'text-green-600'}`}>
-                      {result.safeBrowsing.isBlacklisted ? `⛔ BLACKLISTED: ${result.safeBrowsing.threats.join(', ')}` : '✅ Clean'}
-                    </dd>
-                  </>
-                )}
-                {result.abuseIPDB && (
-                  <>
-                    <dt className="font-semibold text-gray-700">Community Reports</dt>
-                    <dd className="text-gray-600 mb-3">
-                      {result.abuseIPDB.totalReports} reports ({result.abuseIPDB.abuseScore}% confidence)
-                    </dd>
-                    <dt className="font-semibold text-gray-700">ISP</dt>
-                    <dd className="text-gray-600">{result.abuseIPDB.isp}</dd>
-                  </>
-                )}
-              </dl>
-            </div>
-          </div>
+            {/* Social Engineering */}
+            {data.socialEngineering && data.socialEngineering.count > 0 && (
+              <div className="glass-panel p-6">
+                <h3 className="font-bold mb-3 text-orange-300">🎭 Social Engineering</h3>
+                <p className="text-orange-200 text-sm mb-2">
+                  {data.socialEngineering.count} tactics detected
+                </p>
+                <ul className="list-disc list-inside space-y-1 text-orange-100 text-sm">
+                  {data.socialEngineering.indicators.slice(0, 3).map((indicator, idx) => (
+                    <li key={idx}>{indicator}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </section>
 
-          {/* Social Engineering */}
-          {result.socialEngineering && result.socialEngineering.count > 0 && (
-            <div className="p-6 bg-orange-50 border border-orange-200 rounded-lg">
-              <h3 className="text-lg font-bold mb-3 text-orange-800">
-                🎭 Social Engineering Tactics Detected
+          {/* BANK HELP RESOURCES */}
+          {data.bankCheck && data.bankCheck.detected && data.bankCheck.legitimateBanks && (
+            <section className="mt-6 glass-panel p-6 shadow-emerald">
+              <h3 className="font-bold text-emerald-400 mb-3">
+                🛡️ Official Bank Security Resources
               </h3>
-              <ul className="list-disc list-inside space-y-1 text-orange-700">
-                {result.socialEngineering.indicators.map((indicator, idx) => (
-                  <li key={idx}>{indicator}</li>
-                ))}
+              <p className="text-slate-300 text-sm mb-4">
+                If you're concerned about this scan, contact your bank directly using these verified links:
+              </p>
+              <ul className="space-y-2">
+                {data.bankCheck.legitimateBanks.slice(0, 5).map((bank) => {
+                  const bankKey = bank.toLowerCase().replace(/\s+/g, '');
+                  const helpUrl = BANK_HELP[bankKey];
+                  return helpUrl ? (
+                    <li key={bank}>
+                      <a
+                        href={helpUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-emerald-300 hover:text-emerald-200 underline transition-colors"
+                      >
+                        {bank.toUpperCase()} Security Centre →
+                      </a>
+                    </li>
+                  ) : null;
+                })}
               </ul>
-            </div>
+            </section>
           )}
-        </div>
+        </>
       )}
+
     </main>
   );
 }
