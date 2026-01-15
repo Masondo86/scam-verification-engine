@@ -261,12 +261,12 @@ export default function Page() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-slate-400 text-sm">No historical events detected</p>
+                  <p className="text-slate-400 text-sm">No timeline data available</p>
                 )}
               </div>
             </div>
 
-            {/* RISK FACTORS */}
+            {/* RISK HEATMAP */}
             <div className="glass-panel p-6">
               <h3 className="font-bold mb-4 text-purple-300">Risk Factors</h3>
               {data.heatmap && data.heatmap.length > 0 ? (
@@ -293,7 +293,7 @@ export default function Page() {
                   ))}
                 </div>
               ) : (
-                <p className="text-slate-400 text-sm">No significant risk factors detected</p>
+                <p className="text-slate-400 text-sm">No risk factors detected</p>
               )}
             </div>
           </section>
@@ -397,25 +397,122 @@ export default function Page() {
             </div>
           </section>
 
-          {/* CONTINUE READING - FUNNEL TO EDUCATION */}
-          <section className="mt-6 glass-panel p-6 border-purple-500/30">
-            <h3 className="font-bold text-purple-400 mb-4">📚 Learn More About Scams</h3>
-            <div className="grid md:grid-cols-2 gap-4">
-              <a 
-                href="/how-scams-work" 
-                className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/30 hover:bg-purple-500/20 transition-colors"
-              >
-                <div className="font-semibold text-purple-300 mb-1">How Scams Work</div>
-                <div className="text-slate-400 text-sm">Understand the psychology behind fraud</div>
-              </a>
-              <a 
-                href="/whatsapp-scams" 
-                className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/30 hover:bg-purple-500/20 transition-colors"
-              >
-                <div className="font-semibold text-purple-300 mb-1">WhatsApp Scams in SA</div>
-                <div className="text-slate-400 text-sm">Common tactics targeting South Africans</div>
-              </a>
-            </div>
+          {/* BANK WARNINGS */}
+          {data.bankCheck && data.bankCheck.warnings && data.bankCheck.warnings.length > 0 && (
+            <section className="mt-6 glass-panel p-6 border-red-500/50 shadow-lg">
+              <h3 className="font-bold text-red-400 mb-4 flex items-center gap-2 text-lg">
+                🏦 Bank Fraud Alert
+              </h3>
+              {data.bankCheck.warnings.map((warning, idx) => (
+                <div key={idx} className="mb-3 p-4 bg-red-500/10 rounded-lg border border-red-500/30">
+                  <div className="font-semibold text-red-300 text-lg">{warning.bank}</div>
+                  <div className="text-red-200 text-sm mt-1">{warning.message}</div>
+                  <div className={`inline-block mt-2 px-2 py-1 rounded text-xs font-semibold ${
+                    warning.severity === 'high' ? 'bg-red-600 text-white' :
+                    warning.severity === 'medium' ? 'bg-yellow-600 text-white' :
+                    'bg-blue-600 text-white'
+                  }`}>
+                    {warning.severity.toUpperCase()} RISK
+                  </div>
+                </div>
+              ))}
+              
+              {data.bankCheck.threatIndicators && data.bankCheck.threatIndicators.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-red-500/30">
+                  <div className="font-semibold text-red-300 mb-2">Threat Indicators:</div>
+                  <ul className="list-disc list-inside space-y-1 text-red-200 text-sm">
+                    {data.bankCheck.threatIndicators.map((indicator, idx) => (
+                      <li key={idx}>{indicator}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* SECURITY INTELLIGENCE */}
+          <section className="mt-6 grid md:grid-cols-2 gap-6">
+            {data.safeBrowsing && (
+              <div className="glass-panel p-6">
+                <h3 className="font-bold mb-3 text-indigo-300">🔒 Google Safe Browsing</h3>
+                {data.safeBrowsing.isBlacklisted ? (
+                  <div className="space-y-2">
+                    <div className="text-red-400 font-semibold text-lg">⛔ BLACKLISTED</div>
+                    <div className="text-red-300 text-sm">
+                      Threats: {data.safeBrowsing.threats.join(', ')}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-green-400 font-semibold">✅ Clean</div>
+                )}
+              </div>
+            )}
+
+            {data.abuseIPDB && (
+              <div className="glass-panel p-6">
+                <h3 className="font-bold mb-3 text-purple-300">👥 Community Reports</h3>
+                <dl className="space-y-2 text-sm">
+                  <div>
+                    <dt className="text-slate-400">Abuse Score</dt>
+                    <dd className={`font-semibold ${
+                      data.abuseIPDB.abuseScore > 75 ? 'text-red-400' :
+                      data.abuseIPDB.abuseScore > 25 ? 'text-yellow-400' :
+                      'text-green-400'
+                    }`}>
+                      {data.abuseIPDB.abuseScore}%
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-400">Total Reports</dt>
+                    <dd className="text-white">{data.abuseIPDB.totalReports}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-400">ISP</dt>
+                    <dd className="text-white">{data.abuseIPDB.isp}</dd>
+                  </div>
+                </dl>
+              </div>
+            )}
+
+            {data.whois && (
+              <div className="glass-panel p-6">
+                <h3 className="font-bold mb-3 text-emerald-300">🌐 Domain Info</h3>
+                <dl className="space-y-2 text-sm">
+                  {data.whois.domainAge !== undefined && (
+                    <div>
+                      <dt className="text-slate-400">Domain Age</dt>
+                      <dd className="text-white">{data.whois.domainAge} days</dd>
+                    </div>
+                  )}
+                  {data.whois.registrar && (
+                    <div>
+                      <dt className="text-slate-400">Registrar</dt>
+                      <dd className="text-white">{data.whois.registrar}</dd>
+                    </div>
+                  )}
+                  {data.whois.country && (
+                    <div>
+                      <dt className="text-slate-400">Country</dt>
+                      <dd className="text-white">{data.whois.country}</dd>
+                    </div>
+                  )}
+                </dl>
+              </div>
+            )}
+
+            {data.socialEngineering && data.socialEngineering.count > 0 && (
+              <div className="glass-panel p-6">
+                <h3 className="font-bold mb-3 text-orange-300">🎭 Social Engineering</h3>
+                <p className="text-orange-200 text-sm mb-2">
+                  {data.socialEngineering.count} tactics detected
+                </p>
+                <ul className="list-disc list-inside space-y-1 text-orange-100 text-sm">
+                  {data.socialEngineering.indicators.slice(0, 3).map((indicator, idx) => (
+                    <li key={idx}>{indicator}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </section>
 
           {/* UPSELL - PREMIUM PRODUCTS */}
@@ -500,10 +597,6 @@ export default function Page() {
 
         </>
       )}
-
-    </main>
-  );
-}
 
     </main>
   );
