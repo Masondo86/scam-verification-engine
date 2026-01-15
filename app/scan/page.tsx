@@ -348,6 +348,12 @@ export default function Page() {
                   <span className="text-slate-300">Domain registered very recently ({data.whois.domainAge} days old)</span>
                 </div>
               )}
+              {data.whois?.domainAge === undefined && (
+                <div className="flex items-start gap-3">
+                  <span className="text-slate-500 font-bold">N/A</span>
+                  <span className="text-slate-400">Domain age unavailable (WHOIS privacy enabled or corporate domain)</span>
+                </div>
+              )}
               {data.bankCheck?.isImpersonation && (
                 <div className="flex items-start gap-3">
                   <span className="text-red-400 font-bold">-35</span>
