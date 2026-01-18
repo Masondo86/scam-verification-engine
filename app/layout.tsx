@@ -1,5 +1,6 @@
 import './globals.css'
 import type { Metadata } from 'next'
+import { Analytics } from '@vercel/analytics/next'
 
 export const metadata: Metadata = {
   title: 'Scam Verification Engine | Free Scam Checker South Africa',
@@ -63,7 +64,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Analytics />
+      </body>
     </html>
   )
 }
