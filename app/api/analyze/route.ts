@@ -4,235 +4,136 @@ import { rateLimit } from '@/app/lib/ratelimit';
 import { calculateScore } from '@/app/services/scoring';
 import { whoisLookup } from '@/app/services/whois';
 import { analyzeSocialEngineering } from '@/app/services/socialengineering';
-import { detectZAFraud, getLegitimateZABanks } from '@/app/services/zaBankRules';
+import { detectZAFraud } from '@/app/services/zaBankRules';
 import { checkSafeBrowsing } from '@/app/services/safebrowsing';
 import { checkIP, resolveIPFromDomain } from '@/app/services/abuseipdb';
 import { checkKnownScams } from '@/app/data/known-scams';
 
 export async function POST(req: Request) {
   try {
-    /* ----------------------------------
-     * Rate limiting (IP-based)
-     * ---------------------------------- */
-    const ip =
-      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-      '127.0.0.1';
-
-    const { success } = await rateLimit.limit(ip);
-
-    if (!success) {
+    // -----------------------------
+    // Rate limit
+    // -----------------------------
+    const rate = await rateLimit(req);
+    if (!rate.success) {
       return NextResponse.json(
-        { error: 'Too many requests. Please slow down.' },
+        { error: 'Too many requests' },
         { status: 429 }
       );
     }
 
-    /* ----------------------------------
-     * Parse & validate request
-     * ---------------------------------- */
+    // -----------------------------
+    // Parse input
+    // -----------------------------
     const body = await req.json();
-    const { input } = body;
+    const input: string = body?.input?.trim();
 
-    if (!input || typeof input !== 'string') {
+    if (!input) {
       return NextResponse.json(
-        { error: 'Invalid input provided.' },
+        { error: 'No input provided' },
         { status: 400 }
       );
     }
 
-    /* ----------------------------------
-     * Normalize domain
-     * ---------------------------------- */
-    const domain = input
-      .replace(/^https?:\/\//, '')
-      .replace(/^www\./, '')
-      .split('/')[0]
-      .split('?')[0]
-      .toLowerCase()
-      .trim();
-
-    /* ----------------------------------
-     * Parallel intelligence gathering
-     * ---------------------------------- */
-    const [whois, social, safeBrowsing] = await Promise.all([
-      whoisLookup(input),
-      Promise.resolve(analyzeSocialEngineering(input)),
-      checkSafeBrowsing(input),
-    ]);
-
-    /* ----------------------------------
-     * Abuse IP intelligence (sequential)
-     * ---------------------------------- */
-    let abuseData: any = null;
-
-    try {
-      const resolvedIP = await resolveIPFromDomain(domain);
-      if (resolvedIP) {
-        abuseData = await checkIP(resolvedIP);
-      }
-    } catch (err) {
-      console.warn('AbuseIPDB lookup failed:', err);
-    }
-
-    /* ----------------------------------
-     * South Africa bank impersonation
-     * ---------------------------------- */
-    const bankDetection = detectZAFraud(input, domain);
-
-    /* ----------------------------------
-     * Registration date calculation
-     * ---------------------------------- */
-    const registrationDate = whois?.domainAgeDays
-      ? new Date(
-          Date.now() - whois.domainAgeDays * 86400000
-        ).toISOString()
-      : undefined;
-
-    /* ----------------------------------
-     * Baseline scoring
-     * ---------------------------------- */
-    let result = calculateScore({
-      domainAge: whois?.domainAgeDays,
-      blacklist: safeBrowsing.isBlacklisted,
-      blacklistThreats: safeBrowsing.threats,
-      social: social.indicators.length,
-      abuseScore: abuseData?.abuseScore,
-      abuseReports: abuseData?.totalReports,
-      country: whois?.country || abuseData?.country,
-      bankImpersonation: bankDetection.isImpersonation,
-      threatIndicatorCount: bankDetection.threatIndicators.length,
-      registrationDate,
-      lastAbuseReport: abuseData?.lastReportedAt ?? null,
-    });
-
-    /* ----------------------------------
-     * Known scam static blocklist check
-     * ---------------------------------- */
-    const knownScamCheck = checkKnownScams(input);
+    // -----------------------------
+    // Base analysis
+    // -----------------------------
+    let score = 100;
     const warnings: any[] = [];
 
-    if (knownScamCheck.isKnownScam) {
-      // Heavy penalty
-      result.score = Math.max(result.score - 60, 0);
+    // -----------------------------
+    // Known scam blocklist (STATIC)
+    // -----------------------------
+    const knownScamCheck = checkKnownScams(input);
 
-      // Force critical risk
-      result.risk = 'critical';
+    if (knownScamCheck.isKnownScam) {
+      score -= 60;
 
       warnings.push({
         type: 'KNOWN_SCAM',
-        severity: 'critical',
         message: `Matches known scam: ${knownScamCheck.scamName}`,
         description: knownScamCheck.description,
-        riskLevel: knownScamCheck.riskLevel,
+        severity: 'critical',
       });
-
-      result.explanation.unshift(
-        `⚠️ This input matches a confirmed known scam: ${knownScamCheck.scamName}.`
-      );
     }
 
-    /* ----------------------------------
-     * Response
-     * ---------------------------------- */
+    // -----------------------------
+    // Domain / IP checks
+    // -----------------------------
+    const ip = await resolveIPFromDomain(input);
+    if (ip) {
+      const abuse = await checkIP(ip);
+      if (abuse?.isMalicious) {
+        score -= 20;
+        warnings.push({
+          type: 'ABUSE_IP',
+          message: 'IP associated with malicious activity',
+          severity: 'high',
+        });
+      }
+    }
+
+    // -----------------------------
+    // Google Safe Browsing
+    // -----------------------------
+    const safeBrowsing = await checkSafeBrowsing(input);
+    if (safeBrowsing?.threat) {
+      score -= 30;
+      warnings.push({
+        type: 'SAFE_BROWSING',
+        message: 'Listed by Google Safe Browsing',
+        severity: 'critical',
+      });
+    }
+
+    // -----------------------------
+    // South Africa banking fraud rules
+    // -----------------------------
+    const zaFraud = detectZAFraud(input);
+    if (zaFraud?.flagged) {
+      score -= 25;
+      warnings.push({
+        type: 'ZA_BANK_FRAUD',
+        message: zaFraud.reason,
+        severity: 'high',
+      });
+    }
+
+    // -----------------------------
+    // Social engineering / persuasion
+    // -----------------------------
+    const social = analyzeSocialEngineering(input);
+    if (social?.risk > 0) {
+      score -= social.risk;
+      warnings.push({
+        type: 'SOCIAL_ENGINEERING',
+        message: 'Persuasion techniques detected',
+        details: social.signals,
+        severity: 'medium',
+      });
+    }
+
+    // -----------------------------
+    // Final score clamp
+    // -----------------------------
+    score = Math.max(0, Math.min(100, score));
+
     return NextResponse.json({
-      // Core assessment
-      score: result.score,
-      riskLevel: result.risk,
-      confidence: result.score,
-      explanation: result.explanation,
-
-      // Target
-      target: domain,
-      type: 'url' as const,
-
-      // Known scam signal
-      knownScam: knownScamCheck.isKnownScam
-        ? {
-            detected: true,
-            name: knownScamCheck.scamName,
-            description: knownScamCheck.description,
-            riskLevel: knownScamCheck.riskLevel,
-          }
-        : { detected: false },
-
+      input,
+      score,
+      verdict:
+        score < 40 ? 'Likely Scam' :
+        score < 70 ? 'Suspicious' :
+        'Likely Safe',
       warnings,
-
-      // Timeline & heatmap
-      timeline: result.timeline,
-      heatmap: result.heatmap,
-
-      // Bank fraud (South Africa)
-      bankCheck: {
-        detected: bankDetection.detectedBanks.length > 0,
-        legitimateBanks: getLegitimateZABanks(),
-        warnings: bankDetection.warnings,
-        isImpersonation: bankDetection.isImpersonation,
-        threatIndicators: bankDetection.threatIndicators,
-      },
-
-      // WHOIS
-      whois: {
-        domainAge: whois?.domainAgeDays,
-        registrar: whois?.registrar,
-        country: whois?.country,
-      },
-
-      // Safe Browsing
-      safeBrowsing: {
-        isBlacklisted: safeBrowsing.isBlacklisted,
-        threats: safeBrowsing.threats,
-      },
-
-      // Abuse IP
-      abuseIPDB: abuseData
-        ? {
-            abuseScore: abuseData.abuseScore,
-            totalReports: abuseData.totalReports,
-            country: abuseData.country,
-            isp: abuseData.isp,
-            lastReportedAt: abuseData.lastReportedAt,
-          }
-        : null,
-
-      // Social engineering
-      socialEngineering: {
-        indicators: social.indicators,
-        count: social.indicators.length,
-      },
-
-      // Risk breakdown
-      riskBreakdown: {
-        technical: safeBrowsing.isBlacklisted
-          ? 100
-          : whois?.domainAgeDays && whois.domainAgeDays < 90
-          ? 70
-          : 20,
-        socialEngineering:
-          social.indicators.length > 0
-            ? Math.min(social.indicators.length * 30, 100)
-            : 10,
-        community: abuseData?.abuseScore || 0,
-      },
-
-      // Community
-      community: {
-        reportCount: abuseData?.totalReports || 0,
-      },
     });
-  } catch (error) {
-    console.error('Analyze API error:', error);
 
+  } catch (err) {
+    console.error('Analyze error:', err);
     return NextResponse.json(
-      {
-        error: 'Internal server error',
-        details:
-          process.env.NODE_ENV === 'development'
-            ? error instanceof Error
-              ? error.message
-              : String(error)
-            : undefined,
-      },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
+
