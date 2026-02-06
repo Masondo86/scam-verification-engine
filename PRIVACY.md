@@ -1,8 +1,8 @@
-PRIVACY POLICY – LinkSure Scam Verification Engine
+PRIVACY POLICY – The Link Digital Security Scam Verification Engine
 
-Last updated: 2025-01-XX
+Last updated: 2025-02-06
 
-LinkSure (“we”, “us”, “our”) operates the Scam Verification Engine, a free public tool designed to help users identify potential scams, fraud, phishing, vishing, and impersonation attempts.
+The Link Digital Security (“we”, “us”, “our”) operates the Scam Verification Engine, a free public tool designed to help users identify potential scams, fraud, phishing, vishing, and impersonation attempts.
 
 We are committed to protecting your personal information in accordance with the Protection of Personal Information Act (POPIA), Act 4 of 2013.
 
@@ -88,7 +88,7 @@ Request correction or deletion
 
 Withdraw consent
 
-Contact: privacy@YOURDOMAIN.co.za
+Contact: admin@checkascam.co.za
 
 7. Security Measures
 
