@@ -1,4 +1,4 @@
-PRESS STATEMENT – LinkSure Scam Verification Engine
+PRESS STATEMENT – The Link Digital Security Scam Verification Engine
 
 LinkSure has launched a free public scam verification tool to assist South Africans in identifying potential online scams, impersonation attempts, and fraudulent communications.
 
