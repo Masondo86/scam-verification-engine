@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import ScannerCTA from '@/app/components/ScannerCTA';
 
 export const metadata: Metadata = {
   title: 'How Scams Work | Understanding Fraud Psychology - The Link Digital Security',
@@ -32,6 +33,9 @@ export default function HowScamsWorkPage() {
           Even the smartest, most cautious people can fall victim because scammers exploit our deepest emotions and cognitive biases.
         </p>
       </section>
+
+      {/* Top of Funnel CTA */}
+      <ScannerCTA />
 
       {/* The Six Principles */}
       <section className="mb-12">
@@ -267,6 +271,9 @@ export default function HowScamsWorkPage() {
                 makes you less vigilant.
               </p>
             </div>
+            
+            <ScannerCTA />
+
             <div className="flex gap-3">
               <span className="text-pink-400 font-bold">→</span>
               <p>
@@ -323,18 +330,9 @@ export default function HowScamsWorkPage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="glass-panel p-8 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border-2 border-indigo-500/50">
-        <h3 className="text-2xl font-bold text-white mb-4">Verify Before You Trust</h3>
-        <p className="text-slate-300 mb-6">
-          Got a suspicious message? Don't guess - scan it for free in seconds.
-        </p>
-        <Link 
-          href="/scan"
-          className="inline-block btn-3d bg-gradient-to-r from-indigo-500 to-purple-600 border-b-indigo-900 px-6 py-3"
-        >
-          Scan Suspicious Message →
-        </Link>
+      {/* Bottom CTA Overlay */}
+      <section className="mt-12">
+        <ScannerCTA />
       </section>
 
       {/* More Resources */}
