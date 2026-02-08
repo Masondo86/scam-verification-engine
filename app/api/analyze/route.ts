@@ -14,7 +14,13 @@ export async function POST(req: Request) {
     // -----------------------------
     // Rate limit
     // -----------------------------
-    const rate = await rateLimit(req);
+    // FIX: Extract IP from headers (Vercel/Next.js specific)
+    const forwarded = req.headers.get('x-forwarded-for');
+    const ip = forwarded ? forwarded.split(',')[0] : '127.0.0.1';
+    
+    // FIX: Call the limit method on the rateLimit object with the IP
+    const rate = await rateLimit.limit(ip);
+    
     if (!rate.success) {
       return NextResponse.json(
         { error: 'Too many requests' },
@@ -60,9 +66,9 @@ export async function POST(req: Request) {
     // -----------------------------
     // Domain / IP checks
     // -----------------------------
-    const ip = await resolveIPFromDomain(input);
-    if (ip) {
-      const abuse = await checkIP(ip);
+    const ipAddr = await resolveIPFromDomain(input);
+    if (ipAddr) {
+      const abuse = await checkIP(ipAddr);
       if (abuse?.isMalicious) {
         score -= 20;
         warnings.push({
@@ -136,4 +142,3 @@ export async function POST(req: Request) {
     );
   }
 }
-
