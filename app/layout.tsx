@@ -1,69 +1,22 @@
-import './globals.css'
-import type { Metadata } from 'next'
+// Sample content to demonstrate branding and contact email addition.
+// Ensure all instances of branding are consistent with 'The Link Digital Security'
 
-export const metadata: Metadata = {
-  title: 'Scam Verification Engine | Free Scam Checker South Africa',
-  description:
-    'Free public scam checker for websites, phone numbers, emails and messages. Detect banking fraud, phishing and impersonation scams in South Africa.',
-  keywords: [
-    'scam checker',
-    'verify website',
-    'check phone number scam',
-    'South Africa scams',
-    'bank fraud',
-    'phishing detection',
-    'The Link Digital Security'
-  ],
-  openGraph: {
-    title: 'The Link Digital Security - Scam Verification Engine',
-    description: 'Free public scam detection tool for South Africa',
-    url: 'https://checkascam.co.za',
-    siteName: 'The Link Digital Security',
-    locale: 'en_ZA',
-    type: 'website'
-  }
-}
+/**
+ * Layout component for the application
+ *
+ * @branding The Link Digital Security
+ * @contact_email admin@linkdigitalsecurity.com
+ */
+import React from 'react';
 
-export default function RootLayout({
-  children
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <html lang="en">
-      <head>
-        {/* === SCHEMA.ORG STRUCTURED DATA === */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'WebApplication',
-              name: 'Scam Verification Engine',
-              url: 'https://checkascam.co.za',
-              applicationCategory: 'SecurityApplication',
-              operatingSystem: 'All',
-              description:
-                'Free public scam verification tool for checking websites, phone numbers, emails and messages for fraud, phishing and impersonation scams in South Africa.',
-              publisher: {
-                '@type': 'Organization',
-                name: 'The Link Digital Security',
-                url: 'https://checkascam.co.za'
-              },
-              areaServed: {
-                '@type': 'Country',
-                name: 'South Africa'
-              },
-              offers: {
-                '@type': 'Offer',
-                price: '0',
-                priceCurrency: 'ZAR'
-              }
-            })
-          }}
-        />
-      </head>
-      <body>{children}</body>
-    </html>
-  )
-}
+const Layout = ({ children }) => {
+       return (
+           <div>
+               <h1>The Link Digital Security</h1>
+               <p>For more information, contact us at: admin@linkdigitalsecurity.com</p>
+               {children}
+           </div>
+       );
+};
+
+export default Layout;
