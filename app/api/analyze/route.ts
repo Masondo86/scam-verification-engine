@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 
 import { rateLimit } from '@/app/lib/ratelimit';
-import { calculateScore } from '@/app/services/scoring';
-import { whoisLookup } from '@/app/services/whois';
 import { analyzeSocialEngineering } from '@/app/services/socialengineering';
 import { detectZAFraud } from '@/app/services/zaBankRules';
 import { checkSafeBrowsing } from '@/app/services/safebrowsing';
@@ -14,13 +12,11 @@ export async function POST(req: Request) {
     // -----------------------------
     // Rate limit
     // -----------------------------
-    // FIX: Extract IP from headers (Vercel/Next.js specific)
     const forwarded = req.headers.get('x-forwarded-for');
     const ip = forwarded ? forwarded.split(',')[0] : '127.0.0.1';
-    
-    // FIX: Call the limit method on the rateLimit object with the IP
+
     const rate = await rateLimit.limit(ip);
-    
+
     if (!rate.success) {
       return NextResponse.json(
         { error: 'Too many requests' },
@@ -41,18 +37,15 @@ export async function POST(req: Request) {
       );
     }
 
-    // -----------------------------
-    // Base analysis
-    // -----------------------------
     let score = 100;
     const warnings: any[] = [];
 
     // -----------------------------
-    // Known scam blocklist (STATIC)
+    // Known scam check
     // -----------------------------
     const knownScamCheck = checkKnownScams(input);
 
-    if (knownScamCheck.isKnownScam) {
+    if (knownScamCheck?.isKnownScam) {
       score -= 60;
 
       warnings.push({
@@ -64,34 +57,32 @@ export async function POST(req: Request) {
     }
 
     // -----------------------------
-// Domain / IP checks
-// -----------------------------
-const ipAddr = await resolveIPFromDomain(input);
+    // Domain/IP checks
+    // -----------------------------
+    const ipAddr = await resolveIPFromDomain(input);
 
-if (ipAddr) {
-  const abuse = await checkIP(ipAddr);
+    if (ipAddr) {
+      const abuse = await checkIP(ipAddr);
 
-  if (abuse && abuse.abuseConfidenceScore >= 75) {
-    score -= 20;
+      if (abuse && abuse.abuseConfidenceScore >= 75) {
+        score -= 20;
 
-    warnings.push({
-      type: 'ABUSE_IP',
-      message: `IP has high abuse confidence score (${abuse.abuseConfidenceScore}%)`,
-      severity: 'high',
-    });
-  }
-}
-
-    
-
+        warnings.push({
+          type: 'ABUSE_IP',
+          message: `IP has high abuse confidence score (${abuse.abuseConfidenceScore}%)`,
+          severity: 'high',
+        });
+      }
     }
 
     // -----------------------------
     // Google Safe Browsing
     // -----------------------------
     const safeBrowsing = await checkSafeBrowsing(input);
+
     if (safeBrowsing?.threat) {
       score -= 30;
+
       warnings.push({
         type: 'SAFE_BROWSING',
         message: 'Listed by Google Safe Browsing',
@@ -103,8 +94,10 @@ if (ipAddr) {
     // South Africa banking fraud rules
     // -----------------------------
     const zaFraud = detectZAFraud(input);
+
     if (zaFraud?.flagged) {
       score -= 25;
+
       warnings.push({
         type: 'ZA_BANK_FRAUD',
         message: zaFraud.reason,
@@ -113,11 +106,13 @@ if (ipAddr) {
     }
 
     // -----------------------------
-    // Social engineering / persuasion
+    // Social engineering detection
     // -----------------------------
     const social = analyzeSocialEngineering(input);
+
     if (social?.risk > 0) {
       score -= social.risk;
+
       warnings.push({
         type: 'SOCIAL_ENGINEERING',
         message: 'Persuasion techniques detected',
@@ -135,14 +130,17 @@ if (ipAddr) {
       input,
       score,
       verdict:
-        score < 40 ? 'Likely Scam' :
-        score < 70 ? 'Suspicious' :
-        'Likely Safe',
+        score < 40
+          ? 'Likely Scam'
+          : score < 70
+          ? 'Suspicious'
+          : 'Likely Safe',
       warnings,
     });
 
   } catch (err) {
     console.error('Analyze error:', err);
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
