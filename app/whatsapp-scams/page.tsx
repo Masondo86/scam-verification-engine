@@ -1,3 +1,4 @@
+import BroaderExposureSection from "@/components/BroaderExposureSection";
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
@@ -430,6 +431,51 @@ export default function WhatsAppScamsPage() {
           </div>
         </div>
       </section>
+      <BroaderExposureSection />
+      {/* FAQ Section */}
+<section className="mt-16 border-t border-slate-700 pt-12">
+  <h2 className="text-3xl font-bold text-white mb-8">
+    Frequently Asked Questions
+  </h2>
+
+  <div className="space-y-8">
+
+    <div className="glass-panel p-6">
+      <h3 className="text-lg font-bold text-emerald-400 mb-3">
+        Can scammers reuse my phone number after a WhatsApp scam?
+      </h3>
+      <p className="text-slate-300 text-sm">
+        Yes. Phone numbers collected during scams are often redistributed
+        across other fraud campaigns. This can lead to repeated phishing
+        messages or impersonation attempts.
+      </p>
+    </div>
+
+    <div className="glass-panel p-6">
+      <h3 className="text-lg font-bold text-cyan-400 mb-3">
+        Should I change my number after responding to a scam?
+      </h3>
+      <p className="text-slate-300 text-sm">
+        In most cases, strengthening account security and monitoring unusual
+        activity is sufficient. Changing your number may only be necessary if
+        repeated targeting continues.
+      </p>
+    </div>
+
+    <div className="glass-panel p-6">
+      <h3 className="text-lg font-bold text-indigo-400 mb-3">
+        Why do scammers focus on WhatsApp in South Africa?
+      </h3>
+      <p className="text-slate-300 text-sm">
+        WhatsApp has extremely high adoption in South Africa,
+        making it a preferred channel for fraudsters.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+
 
       {/* CTA */}
       <section className="glass-panel p-8 bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border-2 border-emerald-500/50">
