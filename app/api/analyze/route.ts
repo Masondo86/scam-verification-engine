@@ -64,15 +64,16 @@ export async function POST(req: Request) {
     }
 
     // -----------------------------
-    // Domain / IP checks
-    // -----------------------------
-   const ipAddr = await resolveIPFromDomain(input);
+// Domain / IP checks
+// -----------------------------
+const ipAddr = await resolveIPFromDomain(input);
 
 if (ipAddr) {
   const abuse = await checkIP(ipAddr);
 
   if (abuse && abuse.abuseConfidenceScore >= 75) {
     score -= 20;
+
     warnings.push({
       type: 'ABUSE_IP',
       message: `IP has high abuse confidence score (${abuse.abuseConfidenceScore}%)`,
@@ -80,6 +81,7 @@ if (ipAddr) {
     });
   }
 }
+
     
 
     }
