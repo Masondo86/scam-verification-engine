@@ -80,7 +80,7 @@ export async function POST(req: Request) {
     // -----------------------------
     const safeBrowsing = await checkSafeBrowsing(input);
 
-    if (safeBrowsing?.threat) {
+    if (safeBrowsing?.threats && safeBrowsing.threats.length > 0) {
       score -= 30;
 
       warnings.push({
