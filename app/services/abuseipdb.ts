@@ -1,75 +1,78 @@
+// app/services/abuseipdb.ts
+
 export interface AbuseIPResult {
-  abuseScore: number;
-  country: string;
-  usageType: string;
-  isp: string;
-  totalReports: number;
-  lastReportedAt: string | null;
+  abuseConfidenceScore: number;
+  isWhitelisted?: boolean;
+  countryCode?: string;
+  usageType?: string;
+  isp?: string;
+  domain?: string;
+  totalReports?: number;
 }
 
-export async function checkIP(ip: string): Promise<AbuseIPResult | null> {
+// ----------------------------------------
+// Resolve IP from domain
+// ----------------------------------------
+export async function resolveIPFromDomain(input: string): Promise<string | null> {
   try {
-    // Skip local/private IPs
-    if (ip === '127.0.0.1' || ip.startsWith('192.168.') || ip.startsWith('10.') || ip.startsWith('172.')) {
-      return null;
-    }
+    const url = new URL(input.startsWith('http') ? input : `https://${input}`);
+    const hostname = url.hostname;
 
-    const res = await fetch(
-      `https://api.abuseipdb.com/api/v2/check?ipAddress=${encodeURIComponent(ip)}&maxAgeInDays=90&verbose`,
-      {
-        headers: {
-          Key: process.env.ABUSEIPDB_API_KEY!,
-          Accept: "application/json",
-        },
-        cache: 'no-store',
-      }
-    );
-
-    if (!res.ok) {
-      console.warn('AbuseIPDB API error:', res.status);
-      return null;
-    }
-
+    const res = await fetch(`https://dns.google/resolve?name=${hostname}`);
     const data = await res.json();
 
-    return {
-      abuseScore: data.data?.abuseConfidenceScore || 0,
-      country: data.data?.countryCode || 'Unknown',
-      usageType: data.data?.usageType || 'Unknown',
-      isp: data.data?.isp || 'Unknown',
-      totalReports: data.data?.totalReports || 0,
-      lastReportedAt: data.data?.lastReportedAt || null,
-    };
-  } catch (error) {
-    console.error('AbuseIPDB check failed:', error);
+    const answer = data?.Answer?.find((a: any) => a.type === 1);
+
+    return answer?.data || null;
+  } catch {
     return null;
   }
 }
 
-export async function resolveIPFromDomain(domain: string): Promise<string | null> {
+// ----------------------------------------
+// Check IP with AbuseIPDB
+// ----------------------------------------
+export async function checkIP(ip: string): Promise<AbuseIPResult | null> {
   try {
-    // Use a DNS-over-HTTPS service to resolve domain to IP
-    const res = await fetch(
-      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`,
-      {
-        headers: {
-          Accept: "application/dns-json",
-        },
-        cache: 'no-store',
-      }
-    );
+    const apiKey = process.env.ABUSEIPDB_API_KEY;
 
-    if (!res.ok) {
+    if (!apiKey) {
+      console.warn('Missing ABUSEIPDB_API_KEY');
       return null;
     }
 
-    const data = await res.json();
-    
-    // Get the first A record
-    const aRecord = data.Answer?.find((record: any) => record.type === 1);
-    return aRecord?.data || null;
+    const response = await fetch(
+      `https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}&maxAgeInDays=90`,
+      {
+        headers: {
+          Key: apiKey,
+          Accept: 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const result = await response.json();
+
+    if (!result?.data) {
+      return null;
+    }
+
+    return {
+      abuseConfidenceScore: result.data.abuseConfidenceScore,
+      isWhitelisted: result.data.isWhitelisted,
+      countryCode: result.data.countryCode,
+      usageType: result.data.usageType,
+      isp: result.data.isp,
+      domain: result.data.domain,
+      totalReports: result.data.totalReports,
+    };
+
   } catch (error) {
-    console.error('DNS resolution failed:', error);
+    console.error('AbuseIPDB error:', error);
     return null;
   }
 }
