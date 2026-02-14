@@ -93,7 +93,7 @@ export async function POST(req: Request) {
     // -----------------------------
     // South Africa banking fraud rules
     // -----------------------------
-    const zaFraud = detectZAFraud(input);
+    const zaFraud = detectZAFraud(input, {});
 
     if (zaFraud?.flagged) {
       score -= 25;
