@@ -1,22 +1,40 @@
-// Sample content to demonstrate branding and contact email addition.
-// Ensure all instances of branding are consistent with 'The Link Digital Security'
+import './globals.css';
+import type { Metadata } from 'next';
 
-/**
- * Layout component for the application
- *
- * @branding The Link Digital Security
- * @contact_email admin@linkdigitalsecurity.com
- */
-import React from 'react';
-
-const Layout = ({ children }) => {
-       return (
-           <div>
-               <h1>The Link Digital Security</h1>
-               <p>For more information, contact us at: admin@linkdigitalsecurity.com</p>
-               {children}
-           </div>
-       );
+export const metadata: Metadata = {
+  metadataBase: new URL('https://checkascam.co.za'),
+  title: {
+    default: 'Scam Verification Engine | Free Scam Checker South Africa',
+    template: '%s | Scam Verification Engine',
+  },
+  description:
+    'Free public scam checker for websites, phone numbers, emails and messages. Detect phishing, impersonation and banking fraud in South Africa.',
+  keywords: [
+    'check phone number south africa free',
+    'scam checker south africa',
+    'phone scam checker',
+    'phishing detection',
+    'banking fraud south africa',
+  ],
+  openGraph: {
+    type: 'website',
+    locale: 'en_ZA',
+    siteName: 'Scam Verification Engine',
+    title: 'Scam Verification Engine | Free Scam Checker South Africa',
+    description:
+      'Free public scam detection tool for South Africa. Check websites, phone numbers, emails and suspicious messages instantly.',
+    url: 'https://checkascam.co.za',
+  },
 };
 
-export default Layout;
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en-ZA">
+      <body>{children}</body>
+    </html>
+  );
+}
