@@ -125,6 +125,29 @@ export default function HomePage() {
               </Link>
             </div>
 
+            <div className="flex gap-4 mt-6 justify-center flex-wrap">
+              <a
+                href="/scan"
+                className="bg-blue-600 text-white px-6 py-3 rounded-xl"
+              >
+                Start Scan
+              </a>
+
+              <a
+                href="/medical-portal"
+                className="border border-gray-400 px-6 py-3 rounded-xl text-white"
+              >
+                Medical Portal
+              </a>
+
+              <a
+                href="/admin-portal"
+                className="border border-gray-400 px-6 py-3 rounded-xl text-white"
+              >
+                Admin Portal
+              </a>
+            </div>
+
             {/* Social proof stats */}
             <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto pt-8 border-t border-white/10">
               <div>
