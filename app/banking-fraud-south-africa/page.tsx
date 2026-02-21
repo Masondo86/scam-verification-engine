@@ -1,9 +1,18 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import InternalFraudLinks from '@/components/InternalFraudLinks';
 
 export const metadata: Metadata = {
-  title: 'Banking Fraud in South Africa | Prevention & Official Resources - The Link Digital Security',
-  description: 'Learn about bank impersonation scams, phishing tactics, and official security resources from SA banks. Protect your accounts.',
+  title: 'Banking Fraud in South Africa | YourBrand',
+  description:
+    'Learn about banking fraud, impersonation scams, and practical protection steps for South Africans.',
+  openGraph: {
+    title: 'Banking Fraud in South Africa | YourBrand',
+    description:
+      'Learn about banking fraud, impersonation scams, and practical protection steps for South Africans.',
+    url: 'https://checkascam.co.za/banking-fraud-south-africa',
+    type: 'website',
+  },
 };
 
 export default function BankingFraudPage() {
@@ -479,6 +488,8 @@ export default function BankingFraudPage() {
         </Link>
       </section>
 
+
+      <InternalFraudLinks />
     </main>
   );
 }
