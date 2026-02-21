@@ -1,17 +1,21 @@
 import type { Metadata } from 'next';
-import InternalFraudLinks from '@/components/InternalFraudLinks';
 import Link from 'next/link';
+import InternalFraudLinks from '@/components/InternalFraudLinks';
 
 export const metadata: Metadata = {
-  title: 'Check Phone Number South Africa Free | YourBrand',
+  title: 'Check Phone Number South Africa Free | Scam Number Checker',
   description:
-    'Check suspicious South African phone numbers for scam risk, phishing patterns, and impersonation signals.',
+    'Check a phone number in South Africa for free. Detect scam calls, phishing SMS, WhatsApp fraud, and impersonation attempts instantly.',
   openGraph: {
-    title: 'Check Phone Number South Africa Free | YourBrand',
+    title: 'Check Phone Number South Africa Free',
     description:
-      'Check suspicious South African phone numbers for scam risk, phishing patterns, and impersonation signals.',
+      'Verify suspicious South African phone numbers for scam risk and impersonation patterns.',
     url: 'https://checkascam.co.za/phone-number-check-south-africa',
     type: 'website',
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
