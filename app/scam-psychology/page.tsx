@@ -1,3 +1,18 @@
+import InternalFraudLinks from '@/components/InternalFraudLinks';
+
+export const metadata = {
+  title: 'Scam Psychology & Persuasion Tactics | YourBrand',
+  description:
+    'Understand persuasion techniques used in scams and how to recognize manipulation before you respond.',
+  openGraph: {
+    title: 'Scam Psychology & Persuasion Tactics | YourBrand',
+    description:
+      'Understand persuasion techniques used in scams and how to recognize manipulation before you respond.',
+    url: 'https://checkascam.co.za/scam-psychology',
+    type: 'website',
+  },
+};
+
 export default function ScamPsychology() {
   return (
     <main>
@@ -22,6 +37,8 @@ export default function ScamPsychology() {
       <p>
         Understanding these techniques makes scams easier to detect.
       </p>
+
+      <InternalFraudLinks />
     </main>
   );
 }
