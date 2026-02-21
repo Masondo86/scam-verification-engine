@@ -21,15 +21,9 @@ export default function PhoneNumberCheckSouthAfricaPage() {
 
       <section className="glass-panel p-8 border border-indigo-500/30">
         <ul className="space-y-3 text-slate-200 mb-6">
-          <li>
-            <strong className="text-white">Example:</strong> +27 72 123 4567
-          </li>
-          <li>
-            <strong className="text-emerald-400">Free</strong> phone number scam checks
-          </li>
-          <li>
-            <strong className="text-cyan-400">Instant results</strong> from our analyzer
-          </li>
+          <li><strong className="text-white">Example:</strong> +27 72 123 4567</li>
+          <li><strong className="text-emerald-400">Free</strong> phone number scam checks</li>
+          <li><strong className="text-cyan-400">Instant results</strong> from our analyzer</li>
         </ul>
 
         <Link href="/scan">
