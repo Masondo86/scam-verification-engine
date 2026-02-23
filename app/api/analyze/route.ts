@@ -45,13 +45,13 @@ export async function POST(req: Request) {
     // -----------------------------
     const knownScamCheck = checkKnownScams(input);
 
-    if (knownScamCheck?.isKnownScam) {
+    if (knownScamCheck.isKnownScam) {
       score -= 60;
 
       warnings.push({
         type: 'KNOWN_SCAM',
-        message: `Matches known scam: ${knownScamCheck.scamName}`,
-        description: knownScamCheck.description,
+        message: `Matches known scam: ${knownScamCheck.scam.name}`,
+        description: knownScamCheck.scam.description,
         severity: 'critical',
       });
     }
