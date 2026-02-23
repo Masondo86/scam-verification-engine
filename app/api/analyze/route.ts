@@ -93,14 +93,22 @@ export async function POST(req: Request) {
     // -----------------------------
     // South Africa banking fraud rules
     // -----------------------------
-    const zaFraud = detectZAFraud(input, {});
+    const zaFraud = detectZAFraud(input, input);
 
-    if (zaFraud?.flagged) {
+    if (zaFraud.isImpersonation || zaFraud.threatIndicators.length > 0) {
       score -= 25;
+
+      const reason = zaFraud.warnings[0]?.message
+        ?? zaFraud.threatIndicators[0]
+        ?? 'Potential South African banking fraud signals detected';
 
       warnings.push({
         type: 'ZA_BANK_FRAUD',
-        message: zaFraud.reason,
+        message: reason,
+        details: {
+          detectedBanks: zaFraud.detectedBanks,
+          indicators: zaFraud.threatIndicators,
+        },
         severity: 'high',
       });
     }
@@ -109,14 +117,24 @@ export async function POST(req: Request) {
     // Social engineering detection
     // -----------------------------
     const social = analyzeSocialEngineering(input);
+    const socialRiskSignals = [
+      social.urgency,
+      social.fear,
+      social.authority,
+      social.reward,
+      social.impersonation,
+      social.otpScam,
+      social.paymentRedirection,
+    ].filter(Boolean).length;
 
-    if (social?.risk > 0) {
-      score -= social.risk;
+    if (socialRiskSignals > 0) {
+      const socialRiskScore = Math.min(20, socialRiskSignals * 4);
+      score -= socialRiskScore;
 
       warnings.push({
         type: 'SOCIAL_ENGINEERING',
-        message: 'Persuasion techniques detected',
-        details: social.signals,
+        message: social.summary,
+        details: social.indicators,
         severity: 'medium',
       });
     }

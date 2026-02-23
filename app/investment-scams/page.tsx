@@ -1,3 +1,18 @@
+import InternalFraudLinks from '@/components/InternalFraudLinks';
+
+export const metadata = {
+  title: 'Investment Scams in South Africa | YourBrand',
+  description:
+    'Learn common investment scam tactics in South Africa and how to identify warning signs before you invest.',
+  openGraph: {
+    title: 'Investment Scams in South Africa | YourBrand',
+    description:
+      'Learn common investment scam tactics in South Africa and how to identify warning signs before you invest.',
+    url: 'https://checkascam.co.za/investment-scams',
+    type: 'website',
+  },
+};
+
 export default function InvestmentScams() {
   return (
     <main>
@@ -21,6 +36,8 @@ export default function InvestmentScams() {
         Fake farming investments, crypto arbitrage schemes,
         and WhatsApp investment groups.
       </p>
+
+      <InternalFraudLinks />
     </main>
   );
 }

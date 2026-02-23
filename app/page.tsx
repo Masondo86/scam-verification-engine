@@ -1,5 +1,76 @@
 import Link from 'next/link';
 
+const masterFaqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'What is a scam verification engine?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'A scam verification engine analyzes websites, phone numbers, email addresses and digital signals to determine whether a transaction, message or platform is fraudulent or high risk.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How does scam detection work in South Africa?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Scam detection combines device fingerprinting, digital footprint analysis, behavioral signals and known fraud intelligence patterns aligned with South African financial crime regulations.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Can individuals check if a website or WhatsApp number is a scam?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. Users can scan websites, WhatsApp numbers, SMS links and payment requests to detect impersonation scams, phishing attempts and investment fraud.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'What is digital footprint analysis?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Digital footprint analysis evaluates online presence, domain age, ownership consistency, device patterns and network signals to assess legitimacy and risk exposure.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How can medical aid administrators prevent fraud?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Medical aid administrators can use risk scoring, provider verification, device anomaly detection and behavioral fraud monitoring to reduce claims fraud and identity abuse.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How does the platform help banks and financial institutions?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Banks can integrate the fraud detection API to screen high-risk transactions, identify mule accounts, detect impersonation scams and reduce APP fraud losses.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Is the platform aligned with South African anti-money laundering frameworks?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'The system supports fraud monitoring and suspicious activity detection aligned with South African AML and financial crime regulatory expectations.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Can enterprises integrate the scam detection engine via API?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. Enterprises can integrate via secure API to access real-time risk scoring, device risk indicators and digital footprint intelligence.',
+      },
+    },
+  ],
+};
+
 export default function HomePage() {
   return (
     <main className="min-h-screen">
@@ -52,6 +123,29 @@ export default function HomePage() {
               >
                 See How It Works
               </Link>
+            </div>
+
+            <div className="flex gap-4 mt-6 justify-center flex-wrap">
+              <a
+                href="/scan"
+                className="bg-blue-600 text-white px-6 py-3 rounded-xl"
+              >
+                Start Scan
+              </a>
+
+              <a
+                href="/medical-portal"
+                className="border border-gray-400 px-6 py-3 rounded-xl text-white"
+              >
+                Medical Portal
+              </a>
+
+              <a
+                href="/admin-portal"
+                className="border border-gray-400 px-6 py-3 rounded-xl text-white"
+              >
+                Admin Portal
+              </a>
             </div>
 
             {/* Social proof stats */}
@@ -326,6 +420,8 @@ export default function HomePage() {
               <h3 className="font-bold text-white mb-4">Learn</h3>
               <ul className="space-y-2 text-sm">
                 <li><Link href="/how-scams-work" className="text-slate-400 hover:text-indigo-400 transition-colors">How Scams Work</Link></li>
+                <li><Link href="/phone-number-check-south-africa" className="text-slate-400 hover:text-indigo-400 transition-colors">Check Phone Number South Africa</Link></li>
+                <li><Link href="/medical-aid-fraud-south-afica" className="text-slate-400 hover:text-indigo-400 transition-colors">Medical Aid Fraud & Phishing</Link></li>
                 <li><Link href="/whatsapp-scams" className="text-slate-400 hover:text-indigo-400 transition-colors">WhatsApp Scams</Link></li>
                 <li><Link href="/banking-fraud-south-africa" className="text-slate-400 hover:text-indigo-400 transition-colors">Banking Fraud</Link></li>
               </ul>
@@ -334,8 +430,8 @@ export default function HomePage() {
               <h3 className="font-bold text-white mb-4">Company</h3>
               <ul className="space-y-2 text-sm">
                 <li><span className="text-slate-600">About Us</span></li>
-                <li><span className="text-slate-600">Contact</span></li>
-                <li><span className="text-slate-600">Privacy Policy</span></li>
+                <li><a href="mailto:admin@checkascam.co.za" className="text-slate-400 hover:text-indigo-400 transition-colors">Contact Us (admin@checkascam.co.za)</a></li>
+                <li><Link href="/privacy-policy" className="text-slate-400 hover:text-indigo-400 transition-colors">Privacy Policy</Link></li>
               </ul>
             </div>
             <div>
@@ -353,6 +449,10 @@ export default function HomePage() {
         </div>
       </footer>
 
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(masterFaqSchema) }}
+      />
     </main>
   );
 }
