@@ -61,7 +61,6 @@ export function checkKnownScams(input: string): KnownScamCheckResult {
 
     if (domainMatch || keywordMatch) {
       return { isKnownScam: true, scam }
-=======
 export type KnownScam = {
   scamName: string;
   description: string;
