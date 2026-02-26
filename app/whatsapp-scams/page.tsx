@@ -1,10 +1,19 @@
 import BroaderExposureSection from "@/components/BroaderExposureSection";
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import InternalFraudLinks from '@/components/InternalFraudLinks';
 
 export const metadata: Metadata = {
-  title: 'WhatsApp Scams in South Africa | Common Tactics & Protection - The Link Digital Security',
-  description: 'Learn about WhatsApp scams targeting South Africans, including impersonation, job offers, and prize scams. Stay protected.',
+  title: 'WhatsApp Scams in South Africa | YourBrand',
+  description:
+    'Understand common WhatsApp scams targeting South Africans and learn how to verify suspicious messages safely.',
+  openGraph: {
+    title: 'WhatsApp Scams in South Africa | YourBrand',
+    description:
+      'Understand common WhatsApp scams targeting South Africans and learn how to verify suspicious messages safely.',
+    url: 'https://checkascam.co.za/whatsapp-scams',
+    type: 'website',
+  },
 };
 
 export default function WhatsAppScamsPage() {
@@ -503,6 +512,8 @@ export default function WhatsAppScamsPage() {
         </Link>
       </section>
 
+
+      <InternalFraudLinks />
     </main>
   );
 }
