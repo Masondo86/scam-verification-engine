@@ -1,5 +1,13 @@
 import Link from 'next/link';
 
+
+const actions = [
+  { href: '/scan/message', label: 'Scan Email or SMS' },
+  { href: '/scan/url', label: 'Check Website URL' },
+  { href: '/scan/phone', label: 'Check Phone Number' },
+  { href: '/scan/claim', label: 'Upload Claim Document' },
+];
+
 const masterFaqSchema = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
@@ -71,58 +79,33 @@ const masterFaqSchema = {
   ],
 };
 
+
 export default function HomePage() {
   return (
-    <main className="min-h-screen">
-      
-      {/* HERO SECTION - Modern SaaS Style */}
-      <section className="relative overflow-hidden">
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900" />
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-10" />
-        
-        <div className="relative max-w-7xl mx-auto px-4 py-24 sm:py-32">
-          <div className="text-center max-w-4xl mx-auto">
-            {/* Trust badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-sm mb-8">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              Trusted by South Africans
-            </div>
+    <main className="min-h-screen px-4 py-14">
+      <section className="max-w-4xl mx-auto">
+        <div className="glass-panel p-8 sm:p-12 text-center">
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-white mb-4">
+            Medical Fraud &amp; Scam Verification Tool
+          </h1>
+          <p className="text-slate-300 text-base sm:text-lg mb-10">
+            Check suspicious messages, websites, phone numbers or claim documents.
+          </p>
 
-            {/* Main headline */}
-            <h1 className="text-5xl sm:text-7xl font-bold mb-6 leading-tight">
-              <span className="text-white">Verify Scams</span>
-              <br />
-              <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                In Seconds
-              </span>
-            </h1>
-
-            {/* Subheadline */}
-            <p className="text-xl sm:text-2xl text-slate-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Free scam verification for URLs, phone numbers, emails, and messages. 
-              Powered by real-time security intelligence.
-            </p>
-
-            {/* CTA buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Link 
-                href="/scan"
-                className="group relative px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl font-semibold text-white shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all hover:scale-105"
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {actions.map((action) => (
+              <Link
+                key={action.href}
+                href={action.href}
+                className="glass-panel px-5 py-5 text-white font-semibold hover:border-indigo-400/50 transition-colors"
               >
-                Start Free Scan
-                <svg className="inline-block ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
+                {action.label}
               </Link>
-              <Link 
-                href="#how-it-works"
-                className="px-8 py-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl font-semibold text-white hover:bg-white/10 transition-all"
-              >
-                See How It Works
-              </Link>
+
+            ))}
+          </div>
+        </div>
+      </section>
             </div>
 
             <div className="flex gap-4 mt-6 justify-center flex-wrap">
@@ -453,6 +436,7 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(masterFaqSchema) }}
       />
+
     </main>
   );
 }
