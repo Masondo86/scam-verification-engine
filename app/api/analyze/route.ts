@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { KNOWN_SCAMS } from '@/app/data/known-scams';
+import { knownScams } from '@/app/data/known-scams';
 
 type AnalyzeType = 'message' | 'url' | 'phone' | 'claim';
 
@@ -55,7 +55,7 @@ function evaluateMessage(content: string): AnalyzeResponse {
 function evaluateUrl(content: string): AnalyzeResponse {
   const lower = content.toLowerCase();
 
-  const knownDomain = KNOWN_SCAMS.find((scam) =>
+  const knownDomain = knownScams.find((scam) =>
     scam.domains.some((domain) => lower.includes(domain.toLowerCase()))
   );
 
