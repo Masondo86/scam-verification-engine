@@ -1,167 +1,48 @@
-import { NextResponse } from 'next/server';
-
-import { rateLimit } from '@/app/lib/ratelimit';
-import { analyzeSocialEngineering } from '@/app/services/socialengineering';
-import { detectZAFraud } from '@/app/services/zaBankRules';
-import { checkSafeBrowsing } from '@/app/services/safebrowsing';
-import { checkIP, resolveIPFromDomain } from '@/app/services/abuseipdb';
-import { checkKnownScams } from '@/app/data/known-scams';
+import { NextResponse } from "next/server";
+import { knownScams } from "@/lib/known-scams";
 
 export async function POST(req: Request) {
   try {
-    // -----------------------------
-    // Rate limit
-    // -----------------------------
-    const forwarded = req.headers.get('x-forwarded-for');
-    const ip = forwarded ? forwarded.split(',')[0] : '127.0.0.1';
+    const { text } = await req.json();
 
-    const rate = await rateLimit.limit(ip);
-
-    if (!rate.success) {
+    if (!text || text.trim().length === 0) {
       return NextResponse.json(
-        { error: 'Too many requests' },
-        { status: 429 }
-      );
-    }
-
-    // -----------------------------
-    // Parse input
-    // -----------------------------
-    const body = await req.json();
-    const input: string = body?.input?.trim();
-
-    if (!input) {
-      return NextResponse.json(
-        { error: 'No input provided' },
+        { error: "Text is required" },
         { status: 400 }
       );
     }
 
-    let score = 100;
-    const warnings: any[] = [];
+    const lowerText = text.toLowerCase();
 
-    // -----------------------------
-    // Known scam check
-    // -----------------------------
-    const knownScamCheck = checkKnownScams(input);
+    let riskScore = 0;
+    let matchedScams: string[] = [];
 
-    if (knownScamCheck?.isKnownScam) {
-      score -= 60;
-
-      warnings.push({
-        type: 'KNOWN_SCAM',
-        message: `Matches known scam: ${knownScamCheck.scamName}`,
-        description: knownScamCheck.description,
-        severity: 'critical',
-      });
-    }
-
-    // -----------------------------
-    // Domain/IP checks
-    // -----------------------------
-    const ipAddr = await resolveIPFromDomain(input);
-
-    if (ipAddr) {
-      const abuse = await checkIP(ipAddr);
-
-      if (abuse && abuse.abuseConfidenceScore >= 75) {
-        score -= 20;
-
-        warnings.push({
-          type: 'ABUSE_IP',
-          message: `IP has high abuse confidence score (${abuse.abuseConfidenceScore}%)`,
-          severity: 'high',
-        });
+    for (const scam of knownScams) {
+      for (const indicator of scam.indicators) {
+        if (lowerText.includes(indicator)) {
+          riskScore += 25;
+          matchedScams.push(scam.name);
+          break;
+        }
       }
     }
 
-    // -----------------------------
-    // Google Safe Browsing
-    // -----------------------------
-    const safeBrowsing = await checkSafeBrowsing(input);
+    if (riskScore > 100) riskScore = 100;
 
-    if (safeBrowsing?.threats && safeBrowsing.threats.length > 0) {
-      score -= 30;
-
-      warnings.push({
-        type: 'SAFE_BROWSING',
-        message: 'Listed by Google Safe Browsing',
-        severity: 'critical',
-      });
-    }
-
-    // -----------------------------
-    // South Africa banking fraud rules
-    // -----------------------------
-    const zaFraud = detectZAFraud(input, input);
-
-    if (zaFraud.isImpersonation || zaFraud.threatIndicators.length > 0) {
-      score -= 25;
-
-      const reason = zaFraud.warnings[0]?.message
-        ?? zaFraud.threatIndicators[0]
-        ?? 'Potential South African banking fraud signals detected';
-
-      warnings.push({
-        type: 'ZA_BANK_FRAUD',
-        message: reason,
-        details: {
-          detectedBanks: zaFraud.detectedBanks,
-          indicators: zaFraud.threatIndicators,
-        },
-        severity: 'high',
-      });
-    }
-
-    // -----------------------------
-    // Social engineering detection
-    // -----------------------------
-    const social = analyzeSocialEngineering(input);
-    const socialRiskSignals = [
-      social.urgency,
-      social.fear,
-      social.authority,
-      social.reward,
-      social.impersonation,
-      social.otpScam,
-      social.paymentRedirection,
-    ].filter(Boolean).length;
-
-    if (socialRiskSignals > 0) {
-      const socialRiskScore = Math.min(20, socialRiskSignals * 4);
-      score -= socialRiskScore;
-
-      warnings.push({
-        type: 'SOCIAL_ENGINEERING',
-        message: social.summary,
-        details: social.indicators,
-        severity: 'medium',
-      });
-    }
-
-    // -----------------------------
-    // Final score clamp
-    // -----------------------------
-    score = Math.max(0, Math.min(100, score));
+    let verdict = "Safe";
+    if (riskScore >= 70) verdict = "Likely Scam";
+    else if (riskScore >= 30) verdict = "Suspicious";
 
     return NextResponse.json({
-      input,
-      score,
-      verdict:
-        score < 40
-          ? 'Likely Scam'
-          : score < 70
-          ? 'Suspicious'
-          : 'Likely Safe',
-      warnings,
+      riskScore,
+      verdict,
+      matchedScams
     });
 
-  } catch (err) {
-    console.error('Analyze error:', err);
-
+  } catch (error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Invalid request" },
+      { status: 400 }
     );
   }
 }
