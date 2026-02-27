@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { knownScams } from "@/lib/known-scams";
+import { knownScams } from "@/app/data/known-scams";
 
 export async function POST(req: Request) {
   try {
