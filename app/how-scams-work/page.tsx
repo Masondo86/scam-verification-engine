@@ -1,10 +1,19 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import InternalFraudLinks from '@/components/InternalFraudLinks';
 import ScannerCTA from '@/app/components/ScannerCTA';
 
 export const metadata: Metadata = {
-  title: 'How Scams Work | Understanding Fraud Psychology - The Link Digital Security',
-  description: 'Learn the psychology behind scams, common tactics fraudsters use, and why even intelligent people fall victim to fraud.',
+  title: 'How Scams Work in South Africa | YourBrand',
+  description:
+    'Learn how scams work, the psychology behind fraud, and how South Africans can reduce scam risk.',
+  openGraph: {
+    title: 'How Scams Work in South Africa | YourBrand',
+    description:
+      'Learn how scams work, the psychology behind fraud, and how South Africans can reduce scam risk.',
+    url: 'https://checkascam.co.za/how-scams-work',
+    type: 'website',
+  },
 };
 
 export default function HowScamsWorkPage() {
@@ -347,6 +356,8 @@ export default function HowScamsWorkPage() {
         </Link>
       </section>
 
+
+      <InternalFraudLinks />
     </main>
   );
 }
