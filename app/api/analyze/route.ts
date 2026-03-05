@@ -1,4 +1,4 @@
- codex/fix-deployment-issues-for-vercel-hix2ea
+
 import { NextResponse } from 'next/server';
 import { knownScams } from '@/app/data/known-scams';
 
