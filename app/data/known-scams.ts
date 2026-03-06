@@ -1,4 +1,4 @@
- codex/fix-deployment-issues-for-vercel-hix2ea
+
 export type ScamEntry = {
   name: string;
   domains: string[];
