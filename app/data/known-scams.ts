@@ -1,4 +1,4 @@
-
+export {};
 export type ScamEntry = {
   name: string;
   domains: string[];
@@ -151,6 +151,6 @@ export const knownScams: KnownScam[] = [
     name: "Bank SMS Scam",
     description: "SMS pretending to be from your bank.",
     indicators: ["your account is locked", "click here to unlock", "verify now"]
- main
+ 
   }
 ];
