@@ -12,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/scam-psychology',
     '/how-scams-work',
     '/privacy-policy',
+    '/check-scam-message',        // <-- new page
   ];
 
   return routes.map((route) => ({
