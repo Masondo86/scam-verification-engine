@@ -1,4 +1,4 @@
-
+import { analyzeMessageNLP } from '@/app/lib/nlp-analyze';
 import { NextResponse } from 'next/server';
 import { knownScams } from '@/app/data/known-scams';
 
@@ -23,8 +23,11 @@ function evaluateMessage(content: string): AnalyzeResponse {
   const lower = content.toLowerCase();
   const matchedFlags = MESSAGE_FLAGS.filter((flag) => lower.includes(flag));
 
+  // Base result from flag matching
+  let result: AnalyzeResponse;
+
   if (matchedFlags.length >= 3) {
-    return {
+    result = {
       riskLevel: 'High',
       confidence: 82,
       reasons: [
@@ -34,23 +37,34 @@ function evaluateMessage(content: string): AnalyzeResponse {
       ],
       recommendation: 'Do not respond. Contact your medical aid directly.',
     };
-  }
-
-  if (matchedFlags.length > 0) {
-    return {
+  } else if (matchedFlags.length > 0) {
+    result = {
       riskLevel: 'Medium',
       confidence: 62,
       reasons: ['Contains pressure or verification language', 'May be a phishing attempt'],
       recommendation: 'Do not share details yet. Verify sender through official channels.',
     };
+  } else {
+    result = {
+      riskLevel: 'Low',
+      confidence: 22,
+      reasons: ['No strong scam keywords detected'],
+      recommendation: 'Proceed carefully and verify if unsure.',
+    };
   }
 
-  return {
-    riskLevel: 'Low',
-    confidence: 22,
-    reasons: ['No strong scam keywords detected'],
-    recommendation: 'Proceed carefully and verify if unsure.',
-  };
+  // 🔍 NLP Enhancement
+  const nlpAnalysis = analyzeMessageNLP(content);
+  if (nlpAnalysis.riskBoost > 0) {
+    result.reasons.push(...nlpAnalysis.reasons);
+    // Boost confidence, but not above 100
+    result.confidence = Math.min(result.confidence + nlpAnalysis.riskBoost, 100);
+    // Re-evaluate risk level if confidence crosses thresholds
+    if (result.confidence >= 70) result.riskLevel = 'High';
+    else if (result.confidence >= 40) result.riskLevel = 'Medium';
+  }
+
+  return result;
 }
 
 function evaluateUrl(content: string): AnalyzeResponse {
@@ -179,8 +193,8 @@ export async function POST(req: Request) {
     else result = evaluateClaim(content);
 
     return NextResponse.json(result);
-} catch (error) {
-  console.error(error);
-  return NextResponse.json({ error: "Server error" }, { status: 500 });
-}
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
 }
