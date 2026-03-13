@@ -6,15 +6,19 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "check:conflicts": "node scripts/check-conflicts.js",
+    "prebuild": "npm run check:conflicts"
   },
   "dependencies": {
     "next": "^14.2.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "@upstash/ratelimit": "^0.3.0",
-    "@upstash/redis": "^1.8.0"
-    "compromise": "^2.4.0",
+    "@upstash/redis": "^1.8.0",
+    "@upstash/redis": "^1.8.0",
+    "compromise": "^14.15.0"
+
   },
   "devDependencies": {
     "typescript": "^5.3.3",
