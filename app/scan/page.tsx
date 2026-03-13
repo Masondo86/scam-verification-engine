@@ -68,7 +68,7 @@ export default function Page() {
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type, content: extracted }),
+        body: JSON.stringify({ type: apiType, content: extracted }),
       });
 
       if (!res.ok) {
