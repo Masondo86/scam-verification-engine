@@ -16,7 +16,9 @@
     "react-dom": "18.2.0",
     "@upstash/ratelimit": "^0.3.0",
     "@upstash/redis": "^1.8.0",
+    "@upstash/redis": "^1.8.0",
     "compromise": "^14.15.0"
+
   },
   "devDependencies": {
     "typescript": "^5.3.3",
