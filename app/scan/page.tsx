@@ -43,16 +43,7 @@ function detectInputType(input: string): { type: ScanType; extracted: string } {
   return { type: 'text', extracted: trimmed };
 }
 
-const BANK_HELP: Record<string, string> = {
-  // ...
-};
-
-// Input type detection
-function detectInputType(input: string): { type: ScanType; extracted: string } {
-  // ...
-}
-
-// ...
+// Map detected type to API-supported types
 function mapToApiType(type: ScanType): 'message' | 'url' | 'phone' | 'claim' {
   switch (type) {
     case 'email':
@@ -63,12 +54,8 @@ function mapToApiType(type: ScanType): 'message' | 'url' | 'phone' | 'claim' {
     case 'text':
       return 'message';
     default:
-      return 'message'; // fallback
+      return 'message';
   }
-}
-
-export default function Page() {
-  // ...
 }
 
 export default function Page() {
@@ -92,6 +79,7 @@ export default function Page() {
     const detection = detectInputType(input);
     setAnalyzedInput({ original: input, ...detection });
 
+    // Map to API type and use extracted content
     const apiType = mapToApiType(detection.type);
     const content = detection.extracted;
 
@@ -99,7 +87,7 @@ export default function Page() {
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: apiType, content: content }),
+        body: JSON.stringify({ type: apiType, content }),
       });
 
       if (!res.ok) {
