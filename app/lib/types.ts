@@ -1,4 +1,4 @@
-export type ScanType = "url" | "phone" | "email" | "text";
+export type ScanType = 'message' | 'url' | 'phone' | 'claim' | 'email' | 'text';
 
 export interface AnalyzeRequest {
   input: string;
@@ -61,22 +61,8 @@ export interface SocialEngineeringData {
 }
 
 export interface AnalyzeResponse {
-  target: string;
-  type: ScanType;
-  score: number;
-  riskLevel: "safe" | "medium" | "high";
+  riskLevel: 'Low' | 'Medium' | 'High';
   confidence: number;
-  explanation: string;
-  riskBreakdown: RiskBreakdown;
-  community: {
-    reportCount: number;
-  };
-  timeline: TimelineEvent[];
-  heatmap: HeatmapData[];
-  bankCheck: BankCheck;
-  whois?: WhoisData;
-  safeBrowsing?: SafeBrowsingData;
-  abuseIPDB?: AbuseIPDBData | null;
-  socialEngineering?: SocialEngineeringData;
-  screenshotUrl?: string;
+  reasons: string[];
+  recommendation: string;
 }
