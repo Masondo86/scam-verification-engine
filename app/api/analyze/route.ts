@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+import { createClient } from '@supabase/supabase-js';
 import { analyzeMessageNLP } from '@/app/lib/nlp-analyze';
 import { NextResponse } from 'next/server';
 import { knownScams } from '@/app/data/known-scams';
@@ -15,6 +17,35 @@ const MESSAGE_FLAGS = ['urgent', 'payment', 'verify', 'suspend', 'otp'];
 const KNOWN_SCAM_NUMBERS = ['+27721234567', '0721234567', '+27831234567'];
 const SUPPORTED_TYPES: AnalyzeType[] = ['message', 'url', 'phone', 'claim'];
 
+// --------------------------------------------------------------------
+// Supabase client (uses environment variables)
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_ANON_KEY!
+);
+// --------------------------------------------------------------------
+
+// --------------------------------------------------------------------
+// Helper functions (add more sophisticated extraction if needed)
+function extractUrls(text: string): string[] {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  return text.match(urlRegex) || [];
+}
+
+function extractPhones(text: string): string[] {
+  const phoneRegex = /(\+27|0)[6-8][0-9]{8}/g;
+  return text.match(phoneRegex) || [];
+}
+
+function detectSector(text: string): string | null {
+  const lower = text.toLowerCase();
+  if (/(fnb|absa|capitec|nedbank|standard bank|bank)/i.test(lower)) return 'banking';
+  if (/(medical aid|discovery|momentum|fedhealth|bestmed)/i.test(lower)) return 'healthcare';
+  if (/(sars|tax refund)/i.test(lower)) return 'government';
+  return null;
+}
+// --------------------------------------------------------------------
+
 function normalizePhone(value: string) {
   return value.replace(/\s+/g, '').trim();
 }
@@ -23,7 +54,6 @@ function evaluateMessage(content: string): AnalyzeResponse {
   const lower = content.toLowerCase();
   const matchedFlags = MESSAGE_FLAGS.filter((flag) => lower.includes(flag));
 
-  // Base result from flag matching
   let result: AnalyzeResponse;
 
   if (matchedFlags.length >= 3) {
@@ -53,13 +83,11 @@ function evaluateMessage(content: string): AnalyzeResponse {
     };
   }
 
-  // 🔍 NLP Enhancement
+  // NLP Enhancement
   const nlpAnalysis = analyzeMessageNLP(content);
   if (nlpAnalysis.riskBoost > 0) {
     result.reasons.push(...nlpAnalysis.reasons);
-    // Boost confidence, but not above 100
     result.confidence = Math.min(result.confidence + nlpAnalysis.riskBoost, 100);
-    // Re-evaluate risk level if confidence crosses thresholds
     if (result.confidence >= 70) result.riskLevel = 'High';
     else if (result.confidence >= 40) result.riskLevel = 'Medium';
   }
@@ -185,16 +213,42 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unsupported type' }, { status: 400 });
     }
 
+    // Run analysis
     let result: AnalyzeResponse;
-
     if (type === 'message') result = evaluateMessage(content);
     else if (type === 'url') result = evaluateUrl(content);
     else if (type === 'phone') result = evaluatePhone(content);
     else result = evaluateClaim(content);
 
+    // ---------- LOG TO SUPABASE (async, non‑blocking) ----------
+    const forwardedFor = req.headers.get('x-forwarded-for');
+    const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : '';
+    const ipHash = crypto.createHash('sha256').update(ip).digest('hex');
+
+    // Extract additional data (simple regex, can be improved)
+    const urls = extractUrls(content);
+    const phones = extractPhones(content);
+    const sector = detectSector(content);
+
+    // Fire and forget – don't await to keep response fast
+    supabase.from('scan_events').insert({
+      input_text: content,
+      urls_detected: urls,
+      phone_numbers: phones,
+      risk_score: result.confidence,
+      verdict: result.riskLevel,
+      matched_patterns: result.reasons,
+      sector: sector,
+      ip_hash: ipHash,
+      created_at: new Date(),
+    }).then(({ error }) => {
+      if (error) console.error('Supabase insert error:', error);
+    }).catch(err => console.error('Supabase insert exception:', err));
+    // ------------------------------------------------------------
+
     return NextResponse.json(result);
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
