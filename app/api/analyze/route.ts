@@ -220,30 +220,34 @@ export async function POST(req: Request) {
     else if (type === 'phone') result = evaluatePhone(content);
     else result = evaluateClaim(content);
 
-    // ---------- LOG TO SUPABASE (async, non‑blocking) ----------
+      // ---------- LOG TO SUPABASE (async, non‑blocking) ----------
     const forwardedFor = req.headers.get('x-forwarded-for');
     const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : '';
     const ipHash = crypto.createHash('sha256').update(ip).digest('hex');
 
-    // Extract additional data (simple regex, can be improved)
     const urls = extractUrls(content);
     const phones = extractPhones(content);
     const sector = detectSector(content);
 
-    // Fire and forget – don't await to keep response fast
-    supabase.from('scan_events').insert({
-      input_text: content,
-      urls_detected: urls,
-      phone_numbers: phones,
-      risk_score: result.confidence,
-      verdict: result.riskLevel,
-      matched_patterns: result.reasons,
-      sector: sector,
-      ip_hash: ipHash,
-      created_at: new Date(),
-    }).then(({ error }) => {
-      if (error) console.error('Supabase insert error:', error);
-    }).catch(err => console.error('Supabase insert exception:', err));
+    // Fire and forget – wrap in async IIFE to avoid blocking and handle errors
+    void (async () => {
+      try {
+        const { error } = await supabase.from('scan_events').insert({
+          input_text: content,
+          urls_detected: urls,
+          phone_numbers: phones,
+          risk_score: result.confidence,
+          verdict: result.riskLevel,
+          matched_patterns: result.reasons,
+          sector: sector,
+          ip_hash: ipHash,
+          created_at: new Date(),
+        });
+        if (error) console.error('Supabase insert error:', error);
+      } catch (err) {
+        console.error('Supabase insert exception:', err);
+      }
+    })();
     // ------------------------------------------------------------
 
     return NextResponse.json(result);
