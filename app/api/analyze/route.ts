@@ -220,7 +220,7 @@ export async function POST(req: Request) {
     else if (type === 'phone') result = evaluatePhone(content);
     else result = evaluateClaim(content);
 
-      // ---------- LOG TO SUPABASE (async, non‑blocking) ----------
+         // ---------- LOG TO SUPABASE & EXTRACT INDICATORS ----------
     const forwardedFor = req.headers.get('x-forwarded-for');
     const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : '';
     const ipHash = crypto.createHash('sha256').update(ip).digest('hex');
@@ -229,24 +229,66 @@ export async function POST(req: Request) {
     const phones = extractPhones(content);
     const sector = detectSector(content);
 
-    // Fire and forget – wrap in async IIFE to avoid blocking and handle errors
+    // Fire-and-forget: run everything in an async IIFE
     void (async () => {
-      try {
-        const { error } = await supabase.from('scan_events').insert({
-          input_text: content,
-          urls_detected: urls,
-          phone_numbers: phones,
-          risk_score: result.confidence,
-          verdict: result.riskLevel,
-          matched_patterns: result.reasons,
-          sector: sector,
-          ip_hash: ipHash,
-          created_at: new Date(),
-        });
-        if (error) console.error('Supabase insert error:', error);
-      } catch (err) {
-        console.error('Supabase insert exception:', err);
+      // 1. Insert the scan event
+      const { error: insertError } = await supabase.from('scan_events').insert({
+        input_text: content,
+        urls_detected: urls,
+        phone_numbers: phones,
+        risk_score: result.confidence,
+        verdict: result.riskLevel,
+        matched_patterns: result.reasons,
+        sector: sector,
+        ip_hash: ipHash,
+        created_at: new Date(),
+      });
+      if (insertError) console.error('Failed to log scan:', insertError);
+
+      // 2. Upsert each extracted indicator (domains, phones, keywords)
+      //    You can add more indicator types as needed.
+      const upsertIndicator = async (type: string, value: string) => {
+        const { data, error } = await supabase
+          .from('scam_indicators')
+          .select('report_count, last_seen, id')
+          .eq('indicator_type', type)
+          .eq('indicator_value', value)
+          .maybeSingle();  // use maybeSingle to avoid error when no row
+
+        if (data) {
+          await supabase
+            .from('scam_indicators')
+            .update({
+              report_count: data.report_count + 1,
+              last_seen: new Date(),
+            })
+            .eq('id', data.id);
+        } else if (!error) {
+          await supabase
+            .from('scam_indicators')
+            .insert({
+              indicator_type: type,
+              indicator_value: value,
+              report_count: 1,
+              first_seen: new Date(),
+              last_seen: new Date(),
+              risk_level: result.riskLevel,
+            });
+        }
+      };
+
+      // Upsert all detected URLs (treat as domain indicators)
+      for (const url of urls) {
+        // Optionally clean the URL to extract domain
+        const domain = url.replace(/^https?:\/\//, '').split('/')[0];
+        await upsertIndicator('domain', domain);
       }
+      // Upsert all detected phone numbers
+      for (const phone of phones) {
+        await upsertIndicator('phone', phone);
+      }
+      // Optional: extract keywords from reasons and upsert them as 'keyword' type
+      // (you can implement that later)
     })();
     // ------------------------------------------------------------
 
