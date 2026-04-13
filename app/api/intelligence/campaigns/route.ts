@@ -2,12 +2,18 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY! // use service role for write ops
-);
-
 export async function GET() {
+  // Lazy initialization: create client only inside the handler
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+    return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
   try {
     // Fetch indicators with report_count >= 10 (threshold)
     const { data: indicators, error } = await supabase
@@ -18,12 +24,11 @@ export async function GET() {
 
     if (error) throw error;
 
-    // For each indicator, create/update a campaign
+    // Process each indicator into campaigns
     for (const ind of indicators) {
       const campaignName = `${ind.indicator_type.toUpperCase()} campaign: ${ind.indicator_value}`;
       const severity = ind.report_count > 50 ? 'HIGH' : ind.report_count > 20 ? 'MEDIUM' : 'LOW';
 
-      // Upsert into scam_campaigns
       const { error: upsertError } = await supabase
         .from('scam_campaigns')
         .upsert(
@@ -36,7 +41,7 @@ export async function GET() {
             severity: severity,
             sector: ind.sector || null,
           },
-          { onConflict: 'indicator' } // assumes indicator column is unique
+          { onConflict: 'indicator' }
         );
       if (upsertError) console.error('Campaign upsert error:', upsertError);
     }
