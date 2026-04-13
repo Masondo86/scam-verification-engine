@@ -1,13 +1,5 @@
-// app/admin/page.tsx
 'use client';
 import { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client (using anon key for public reads)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -31,16 +23,10 @@ export default function AdminPage() {
 
   const fetchStats = async () => {
     setLoading(true);
-    const { data: scans } = await supabase
-      .from('scan_events')
-      .select('id, risk_score, created_at', { count: 'exact' });
-    const { data: indicators } = await supabase
-      .from('scam_indicators')
-      .select('*')
-      .order('report_count', { ascending: false })
-      .limit(10);
-
-    setStats({ scans: scans?.length || 0, topIndicators: indicators });
+    // Fetch stats from an API endpoint instead of direct Supabase call
+    const res = await fetch('/api/admin/stats');
+    const data = await res.json();
+    setStats(data);
     setLoading(false);
   };
 
@@ -70,7 +56,7 @@ export default function AdminPage() {
       <div className="grid grid-cols-2 gap-4 mb-8">
         <div className="bg-white shadow p-4 rounded">
           <h2 className="text-xl">Total Scans</h2>
-          <p className="text-4xl font-bold">{stats?.scans}</p>
+          <p className="text-4xl font-bold">{stats?.totalScans}</p>
         </div>
         <div className="bg-white shadow p-4 rounded">
           <h2 className="text-xl">Top Indicators</h2>
