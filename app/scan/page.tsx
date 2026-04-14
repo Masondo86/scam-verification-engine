@@ -330,6 +330,30 @@ export default function Page() {
             );
           })()}
 
+                    {/* ESCALATION BUTTON (only for High risk) */}
+          {data.riskLevel === 'High' && (
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={async () => {
+                  const res = await fetch('/api/intelligence/escalate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      scanContent: analyzedInput?.original,
+                      riskScore: data.confidence,
+                      reasons: data.reasons,
+                    }),
+                  });
+                  if (res.ok) alert('Thank you. This scam has been reported to authorities.');
+                  else alert('Failed to submit report. Please try again later.');
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors"
+              >
+                🚨 Report this scam to authorities
+              </button>
+            </div>
+          )}
+
           {/* WHY THIS SCORE - simplified to use reasons */}
           <section className="mt-6 glass-panel p-6">
             <h3 className="font-bold text-slate-200 mb-4 text-lg">💡 Why This Score?</h3>
