@@ -51,15 +51,16 @@ function normalizePhone(value: string) {
   return value.replace(/\s+/g, '').trim();
 }
 
-async function getSpamReportCount(phoneNumber: string): Promise<number> {
+async function getSpamReportCount(type: string, content: string): Promise<number> {
   const supabaseAdmin = createClient(
     process.env.SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
   const { count, error } = await supabaseAdmin
-    .from('spam_reports')
+    .from('user_reports')
     .select('*', { count: 'exact', head: true })
-    .eq('phone_number', phoneNumber);
+    .eq('type', type)
+    .eq('content', content);
   if (error) {
     console.error('Failed to fetch spam count:', error);
     return 0;
@@ -237,9 +238,9 @@ export async function POST(req: Request) {
     else if (type === 'phone') result = evaluatePhone(content);
     else result = evaluateClaim(content);
 
-    // If it's a phone number, get spam report count
-    if (type === 'phone') {
-      const spamCount = await getSpamReportCount(content);
+    // Get spam report count for all types
+    if (type === 'message' || type === 'url' || type === 'phone') {
+      const spamCount = await getSpamReportCount(type, content);
       result = { ...result, spamReportCount: spamCount };
     }
 
