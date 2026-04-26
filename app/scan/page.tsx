@@ -64,6 +64,8 @@ export default function Page() {
   const [data, setData] = useState<AnalyzeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [analyzedInput, setAnalyzedInput] = useState<{ original: string; type: ScanType; extracted: string } | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportMessage, setReportMessage] = useState<string | null>(null);
 
   async function analyze() {
     if (!input.trim()) {
@@ -101,6 +103,41 @@ export default function Page() {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleReportAsSpam() {
+    if (!analyzedInput || !data) return;
+
+    setReportLoading(true);
+    setReportMessage(null);
+
+    try {
+      const reportType = analyzedInput.type === 'url' ? 'url' :
+                         analyzedInput.type === 'email' ? 'url' :
+                         analyzedInput.type === 'phone' ? 'phone' : 'message';
+      const reportContent = analyzedInput.extracted;
+
+      const res = await fetch('/api/spam/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: reportType, content: reportContent }),
+      });
+
+      if (res.ok) {
+        setReportMessage('✅ Thank you for reporting. This helps the community stay safe.');
+        // Increment local count
+        if (data.spamReportCount !== undefined) {
+          setData({ ...data, spamReportCount: data.spamReportCount + 1 });
+        }
+      } else {
+        const errorData = await res.json();
+        setReportMessage(`⚠️ ${errorData.error || 'Failed to submit report. Please try again later.'}`);
+      }
+    } catch (err) {
+      setReportMessage('⚠️ An error occurred while submitting your report.');
+    } finally {
+      setReportLoading(false);
     }
   }
 
@@ -293,11 +330,11 @@ export default function Page() {
             </div>
           </section>
 
-          {/* SPAM REPORT COUNT (for phone numbers) */}
+          {/* COMMUNITY SPAM REPORT COUNT */}
           {data.spamReportCount !== undefined && (
-            <div className="mt-6 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
-              <p className="text-yellow-300 text-sm">
-                📢 This number has been reported as spam <strong>{data.spamReportCount}</strong> time{data.spamReportCount !== 1 ? 's' : ''} by our community.
+            <div className="mt-6 p-4 bg-amber-500/10 rounded-lg border border-amber-500/30">
+              <p className="text-amber-200 text-sm">
+                📢 This item has been reported as spam <strong>{data.spamReportCount}</strong> time{data.spamReportCount !== 1 ? 's' : ''} by our community.
               </p>
             </div>
           )}
@@ -339,7 +376,23 @@ export default function Page() {
             );
           })()}
 
-                    {/* ESCALATION BUTTON (only for High risk) */}
+          {/* REPORT AS SPAM BUTTON */}
+          <div className="mt-6 flex flex-col gap-3 items-center">
+            <button
+              onClick={handleReportAsSpam}
+              disabled={reportLoading}
+              className="text-sm text-slate-400 hover:text-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            >
+              {reportLoading ? '📤 Submitting report...' : '🚨 Report this ' + (analyzedInput?.type === 'url' || analyzedInput?.type === 'email' ? 'URL' : analyzedInput?.type === 'phone' ? 'phone number' : 'message') + ' as spam'}
+            </button>
+            {reportMessage && (
+              <p className={`text-xs ${reportMessage.includes('✅') ? 'text-green-300' : 'text-amber-300'}`}>
+                {reportMessage}
+              </p>
+            )}
+          </div>
+
+          {/* ESCALATION BUTTON (only for High risk) */}
           {data.riskLevel === 'High' && (
             <div className="mt-6 flex justify-center">
               <button
