@@ -65,4 +65,5 @@ export interface AnalyzeResponse {
   confidence: number;
   reasons: string[];
   recommendation: string;
+  spamReportCount?: number;   // only for phone numbers
 }
