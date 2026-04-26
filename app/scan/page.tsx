@@ -293,6 +293,15 @@ export default function Page() {
             </div>
           </section>
 
+          {/* SPAM REPORT COUNT (for phone numbers) */}
+          {data.spamReportCount !== undefined && (
+            <div className="mt-6 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
+              <p className="text-yellow-300 text-sm">
+                📢 This number has been reported as spam <strong>{data.spamReportCount}</strong> time{data.spamReportCount !== 1 ? 's' : ''} by our community.
+              </p>
+            </div>
+          )}
+
           {/* ACTIONABLE RECOMMENDATIONS */}
           {(() => {
             const rec = getRecommendation();
