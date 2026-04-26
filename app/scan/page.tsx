@@ -381,7 +381,7 @@ export default function Page() {
             <button
               onClick={handleReportAsSpam}
               disabled={reportLoading}
-              className="text-sm text-slate-400 hover:text-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              className="bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {reportLoading ? '📤 Submitting report...' : '🚨 Report this ' + (analyzedInput?.type === 'url' || analyzedInput?.type === 'email' ? 'URL' : analyzedInput?.type === 'phone' ? 'phone number' : 'message') + ' as spam'}
             </button>
