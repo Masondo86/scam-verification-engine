@@ -129,7 +129,29 @@ function evaluateUrl(content: string): AnalyzeResponse {
     };
   }
 
-  const suspiciousParts = ['login-secure', 'verify-account', 'freegift', 'claim-now'];
+  const suspiciousParts = [
+    'login-secure',
+    'verify-account',
+    'freegift',
+    'claim-now',
+    'fake-',
+    'phishing-',
+    'urgent-action',
+    'confirm-identity',
+    'update-payment',
+    'validate-account',
+    'secure-login',
+    'instant-approval',
+    'limited-offer',
+    'act-now',
+    'click-here-now',
+    'verify-now',
+    'confirm-now',
+    'approve-now',
+    'download-app',
+    'install-now',
+  ];
+
   const suspiciousMatch = suspiciousParts.some((part) => lower.includes(part));
 
   if (suspiciousMatch) {
