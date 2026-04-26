@@ -11,6 +11,7 @@ type AnalyzeResponse = {
   confidence: number;
   reasons: string[];
   recommendation: string;
+  spamReportCount?: number;
 };
 
 const MESSAGE_FLAGS = ['urgent', 'payment', 'verify', 'suspend', 'otp'];
@@ -48,6 +49,22 @@ function detectSector(text: string): string | null {
 
 function normalizePhone(value: string) {
   return value.replace(/\s+/g, '').trim();
+}
+
+async function getSpamReportCount(phoneNumber: string): Promise<number> {
+  const supabaseAdmin = createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+  const { count, error } = await supabaseAdmin
+    .from('spam_reports')
+    .select('*', { count: 'exact', head: true })
+    .eq('phone_number', phoneNumber);
+  if (error) {
+    console.error('Failed to fetch spam count:', error);
+    return 0;
+  }
+  return count || 0;
 }
 
 function evaluateMessage(content: string): AnalyzeResponse {
@@ -219,6 +236,12 @@ export async function POST(req: Request) {
     else if (type === 'url') result = evaluateUrl(content);
     else if (type === 'phone') result = evaluatePhone(content);
     else result = evaluateClaim(content);
+
+    // If it's a phone number, get spam report count
+    if (type === 'phone') {
+      const spamCount = await getSpamReportCount(content);
+      result = { ...result, spamReportCount: spamCount };
+    }
 
          // ---------- LOG TO SUPABASE & EXTRACT INDICATORS ----------
     const forwardedFor = req.headers.get('x-forwarded-for');
