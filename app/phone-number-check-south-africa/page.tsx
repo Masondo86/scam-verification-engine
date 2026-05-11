@@ -27,7 +27,7 @@ export default function PhoneNumberCheckSouthAfricaPage() {
         </ul>
 
         <Link href="/scan">
-          <button className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl font-semibold text-white shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all hover:scale-[1.01]">
+          <button className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl font-semibold text-white shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-shadow cursor-pointer">
             Check Phone Number Now
           </button>
         </Link>
