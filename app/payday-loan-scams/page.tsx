@@ -1,18 +1,6 @@
-// app/payday-loan-scams/page.tsx
-import Link from 'next/link';
-import { Metadata } from 'next';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Payday Loan Scams in South Africa | How to Spot Fake Lenders',
-  description: 'Learn how to verify legitimate payday loan providers, spot red flags like upfront fees, and report illegal lenders. Protect yourself from loan scams.',
-  keywords: 'payday loan scams south africa, fake loans, mashonisa, NCR registered lenders, loan shark',
-  openGraph: {
-    title: 'Payday Loan Scams in South Africa | NCR Verification & Red Flags',
-    description: 'Avoid loan scams: check NCR registration, never pay upfront fees, and verify lender legitimacy before borrowing.',
-    url: 'https://checkascam.co.za/payday-loan-scams',
-    type: 'website',
-  },
-};
+import Link from 'next/link';
 
 export default function PaydayLoanScamsPage() {
   return (
@@ -47,7 +35,7 @@ export default function PaydayLoanScamsPage() {
       <div className="mb-12 text-center bg-indigo-50 rounded-xl p-6 border border-indigo-100">
         <h2 className="text-2xl font-bold text-indigo-800 mb-3">Verify a Suspicious Loan Offer</h2>
         <p className="text-slate-600 mb-4">Paste the SMS, WhatsApp message, website URL, or phone number – free & instant.</p>
-        <Link href="/scan" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-semibold text-white shadow-md hover:shadow-lg transition-all">
+        <Link href="/scan" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-semibold text-white shadow-md hover:shadow-lg transition-shadow">
           🔍 Open Scam Detector
         </Link>
       </div>
@@ -57,19 +45,19 @@ export default function PaydayLoanScamsPage() {
       <div className="space-y-4 mb-8">
         <div className="flex items-start gap-3">
           <span className="text-green-600 font-bold text-xl">1.</span>
-          <div><strong>Search the NCR Register</strong> – Visit the official <Link href="https://www.ncr.org.za" className="text-indigo-600 underline">NCR Register of Registrants</Link> and search by company name or NCRCP number. Only registered lenders can legally lend money.</div>
+          <div><strong>Search the NCR Register</strong> – Visit the official <Link href="https://www.ncr.org.za" className="text-indigo-600 underline">NCR Register of Registrants</Link> and search for the lender's name or NCRCP number.</div>
         </div>
         <div className="flex items-start gap-3">
           <span className="text-green-600 font-bold text-xl">2.</span>
-          <div><strong>Check the NCR “Lapsed” List</strong> – If a lender appears on the <Link href="https://www.ncr.org.za" className="text-indigo-600 underline">Lapsed Registrations</Link> list, they are no longer authorised.</div>
+          <div><strong>Check the NCR "Lapsed" List</strong> – If a lender appears on the <Link href="https://www.ncr.org.za" className="text-indigo-600 underline">Lapsed Registrations</Link> list, they are no longer authorised to lend.</div>
         </div>
         <div className="flex items-start gap-3">
           <span className="text-green-600 font-bold text-xl">3.</span>
-          <div><strong>Use the SAFPS Yima Scanner</strong> – Paste the lender’s website into <Link href="https://www.yima.org.za" className="text-indigo-600 underline">Yima</Link> to see if it has been flagged as malicious.</div>
+          <div><strong>Use the SAFPS Yima Scanner</strong> – Paste the lender's website into <Link href="https://www.yima.org.za" className="text-indigo-600 underline">Yima</Link> to see if it's flagged as fraudulent.</div>
         </div>
         <div className="flex items-start gap-3">
           <span className="text-green-600 font-bold text-xl">4.</span>
-          <div><strong>Contact the NCR directly</strong> – Call 0860 627 627 to verify a lender’s status.</div>
+          <div><strong>Contact the NCR directly</strong> – Call 0860 627 627 to verify a lender's status.</div>
         </div>
       </div>
 
@@ -78,10 +66,10 @@ export default function PaydayLoanScamsPage() {
       <div className="space-y-4 mb-8">
         <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500">
           <h3 className="font-bold text-red-700 mb-1">💰 Upfront fees</h3>
-          <p className="text-slate-600">“Pay R250 admin fee before we release your loan.” Legitimate lenders deduct fees from the loan amount or add them to repayments – never ask for money before payout.</p>
+          <p className="text-slate-600">"Pay R250 admin fee before we release your loan." Legitimate lenders deduct fees from the loan amount or add them to repayments – never ask for money upfront.</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500">
-          <h3 className="font-bold text-red-700 mb-1">✅ “Guaranteed approval” / “No credit check”</h3>
+          <h3 className="font-bold text-red-700 mb-1">✅ "Guaranteed approval" / "No credit check"</h3>
           <p className="text-slate-600">The National Credit Act requires an affordability assessment. Any lender promising 100% approval is either a scammer or an illegal mashonisa.</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500">
@@ -89,11 +77,11 @@ export default function PaydayLoanScamsPage() {
           <p className="text-slate-600">Legitimate lenders have professional websites, landline numbers, and physical addresses. Scammers operate via anonymous channels.</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500">
-          <h3 className="font-bold text-red-700 mb-1">🆔 Request for ID book, bank card, or PIN as “security”</h3>
+          <h3 className="font-bold text-red-700 mb-1">🆔 Request for ID book, bank card, or PIN as "security"</h3>
           <p className="text-slate-600">This is illegal in South Africa. They will use your information for identity theft.</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500">
-          <h3 className="font-bold text-red-700 mb-1">⏱ Extreme urgency – “Offer expires in 1 hour”</h3>
+          <h3 className="font-bold text-red-700 mb-1">⏱ Extreme urgency – "Offer expires in 1 hour"</h3>
           <p className="text-slate-600">Scammers pressure you to act without thinking. Legitimate lenders give you time to read the contract.</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500">
@@ -102,7 +90,7 @@ export default function PaydayLoanScamsPage() {
         </div>
         <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500">
           <h3 className="font-bold text-red-700 mb-1">❌ No NCR registration number on their website</h3>
-          <p className="text-slate-600">If they don’t display their NCRCP number, assume they are illegal.</p>
+          <p className="text-slate-600">If they don't display their NCRCP number, assume they are illegal.</p>
         </div>
       </div>
 
@@ -118,19 +106,19 @@ export default function PaydayLoanScamsPage() {
             </tr>
           </thead>
           <tbody>
-            <tr className="border-t"><td className="px-4 py-2">Wonga</td><td className="px-4 py-2">NCRCP12875</td><td className="px-4 py-2"><Link href="https://www.wonga.co.za" className="text-indigo-600">wonga.co.za</Link></td></tr>
-            <tr className="border-t"><td className="px-4 py-2">Atlas Finance</td><td className="px-4 py-2">NCRCP43</td><td className="px-4 py-2"><Link href="https://www.atlasfinance.co.za" className="text-indigo-600">atlasfinance.co.za</Link></td></tr>
-            <tr className="border-t"><td className="px-4 py-2">Finance27 (Sanlam)</td><td className="px-4 py-2">NCRCP7084</td><td className="px-4 py-2"><Link href="https://www.sanlamonline.co.za" className="text-indigo-600">sanlamonline.co.za</Link></td></tr>
-            <tr className="border-t"><td className="px-4 py-2">Barko Loans</td><td className="px-4 py-2">NCRCP? (Check NCR)</td><td className="px-4 py-2"><Link href="https://www.barko.co.za" className="text-indigo-600">barko.co.za</Link></td></tr>
-            <tr className="border-t"><td className="px-4 py-2">Sunshine Loans</td><td className="px-4 py-2">NCRCP14110</td><td className="px-4 py-2"><Link href="https://www.sunshineloans.co.za" className="text-indigo-600">sunshineloans.co.za</Link></td></tr>
-            <tr className="border-t"><td className="px-4 py-2">Supreme Finance</td><td className="px-4 py-2">NCRCP7342</td><td className="px-4 py-2"><Link href="https://www.supremefinance.co.za" className="text-indigo-600">supremefinance.co.za</Link></td></tr>
+            <tr className="border-t"><td className="px-4 py-2">Wonga</td><td className="px-4 py-2">NCRCP12875</td><td className="px-4 py-2"><Link href="https://www.wonga.co.za" className="text-indigo-600 underline">wonga.co.za</Link></td></tr>
+            <tr className="border-t"><td className="px-4 py-2">Atlas Finance</td><td className="px-4 py-2">NCRCP43</td><td className="px-4 py-2"><Link href="https://www.atlasfinance.co.za" className="text-indigo-600 underline">atlasfinance.co.za</Link></td></tr>
+            <tr className="border-t"><td className="px-4 py-2">Finance27 (Sanlam)</td><td className="px-4 py-2">NCRCP7084</td><td className="px-4 py-2"><Link href="https://www.sanlamonline.co.za" className="text-indigo-600 underline">sanlamonline.co.za</Link></td></tr>
+            <tr className="border-t"><td className="px-4 py-2">Barko Loans</td><td className="px-4 py-2">NCRCP? (Check NCR)</td><td className="px-4 py-2"><Link href="https://www.barko.co.za" className="text-indigo-600 underline">barko.co.za</Link></td></tr>
+            <tr className="border-t"><td className="px-4 py-2">Sunshine Loans</td><td className="px-4 py-2">NCRCP14110</td><td className="px-4 py-2"><Link href="https://www.sunshineloans.co.za" className="text-indigo-600 underline">sunshineloans.co.za</Link></td></tr>
+            <tr className="border-t"><td className="px-4 py-2">Supreme Finance</td><td className="px-4 py-2">NCRCP7342</td><td className="px-4 py-2"><Link href="https://www.supremefinance.co.za" className="text-indigo-600 underline">supremefinance.co.za</Link></td></tr>
           </tbody>
         </table>
-        <p className="text-xs text-slate-400 mt-2">Always double‑check registration status on the <Link href="https://www.ncr.org.za" className="underline">NCR website</Link> – registrations can lapse.</p>
+        <p className="text-xs text-slate-400 mt-2">Always double‑check registration status on the <Link href="https://www.ncr.org.za" className="underline">NCR website</Link> – registrations change frequently.</p>
       </div>
 
       {/* What to Do If Scammed */}
-      <h2 className="text-2xl font-bold mb-4 text-slate-900">🚨 What to Do If You’ve Been Targeted</h2>
+      <h2 className="text-2xl font-bold mb-4 text-slate-900">🚨 What to Do If You've Been Targeted</h2>
       <div className="space-y-4 mb-8">
         <div className="p-4 bg-red-50 rounded-lg border border-red-200">
           <h3 className="font-bold text-red-700">1. Stop all payments</h3>
@@ -138,7 +126,7 @@ export default function PaydayLoanScamsPage() {
         </div>
         <div className="p-4 bg-red-50 rounded-lg border border-red-200">
           <h3 className="font-bold text-red-700">2. Report to SAFPS Yima</h3>
-          <p className="text-slate-600">Visit <Link href="https://www.yima.org.za" className="text-indigo-600 underline">yima.org.za</Link> to report the scammer’s phone number, website, or bank account.</p>
+          <p className="text-slate-600">Visit <Link href="https://www.yima.org.za" className="text-indigo-600 underline">yima.org.za</Link> to report the scammer's phone number, website, or bank account.</p>
         </div>
         <div className="p-4 bg-red-50 rounded-lg border border-red-200">
           <h3 className="font-bold text-red-700">3. File a complaint with the NCR</h3>
