@@ -3,6 +3,11 @@ const nextConfig = {
   reactStrictMode: true,
 
   /**
+   * Static generation timeout configuration
+   */
+  staticPageGenerationTimeout: 180,
+
+  /**
    * Security headers – critical for fraud / banking tooling
    */
   async headers() {
