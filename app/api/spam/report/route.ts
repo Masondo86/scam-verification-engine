@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Type and content are required' }, { status: 400 });
     }
 
-    const allowedTypes = ['message', 'url', 'phone'];
+    const allowedTypes = ['message', 'url', 'phone', 'loan'];
     if (!allowedTypes.includes(type)) {
       return NextResponse.json({ error: 'Invalid report type' }, { status: 400 });
     }
