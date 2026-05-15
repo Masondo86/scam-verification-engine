@@ -28,7 +28,7 @@ const supabase = createClient(
 // --------------------------------------------------------------------
 
 // --------------------------------------------------------------------
-// Helper functions (add more sophisticated extraction if needed)
+// Helper functions
 function extractUrls(text: string): string[] {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   return text.match(urlRegex) || [];
@@ -131,26 +131,10 @@ function evaluateUrl(content: string): AnalyzeResponse {
   }
 
   const suspiciousParts = [
-    'login-secure',
-    'verify-account',
-    'freegift',
-    'claim-now',
-    'fake-',
-    'phishing-',
-    'urgent-action',
-    'confirm-identity',
-    'update-payment',
-    'validate-account',
-    'secure-login',
-    'instant-approval',
-    'limited-offer',
-    'act-now',
-    'click-here-now',
-    'verify-now',
-    'confirm-now',
-    'approve-now',
-    'download-app',
-    'install-now',
+    'login-secure', 'verify-account', 'freegift', 'claim-now', 'fake-', 'phishing-',
+    'urgent-action', 'confirm-identity', 'update-payment', 'validate-account',
+    'secure-login', 'instant-approval', 'limited-offer', 'act-now', 'click-here-now',
+    'verify-now', 'confirm-now', 'approve-now', 'download-app', 'install-now',
   ];
 
   const suspiciousMatch = suspiciousParts.some((part) => lower.includes(part));
@@ -176,7 +160,6 @@ async function evaluatePhone(content: string): Promise<AnalyzeResponse> {
   const phone = normalizePhone(content);
   let result: AnalyzeResponse;
 
-  // Existing scam detection (known scam numbers)
   if (KNOWN_SCAM_NUMBERS.includes(phone)) {
     result = {
       riskLevel: 'High',
@@ -193,14 +176,11 @@ async function evaluatePhone(content: string): Promise<AnalyzeResponse> {
     };
   }
 
-  // 🔍 IPQualityScore Enhancement
   const ipqsData = await getIPQSPhoneReputation(phone);
   if (ipqsData && ipqsData.riskScore > 0) {
     result.reasons.push(...ipqsData.reasons);
-    // Boost confidence (IPQS riskScore is 0–100, higher is worse)
-    const boost = ipqsData.riskScore * 0.5; // e.g., riskScore 80 → boost 40
+    const boost = ipqsData.riskScore * 0.5;
     result.confidence = Math.min(result.confidence + boost, 100);
-    // Re‑evaluate risk level
     if (result.confidence >= 70) result.riskLevel = 'High';
     else if (result.confidence >= 40) result.riskLevel = 'Medium';
   }
@@ -270,11 +250,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unsupported type' }, { status: 400 });
     }
 
+    // Declare result variable
+    let result: AnalyzeResponse;
+
     // Run analysis
-   if (type === 'message') result = evaluateMessage(content);
-else if (type === 'url') result = evaluateUrl(content);
-else if (type === 'phone') result = await evaluatePhone(content); // ✅ add await
-else result = evaluateClaim(content);
+    if (type === 'message') result = evaluateMessage(content);
+    else if (type === 'url') result = evaluateUrl(content);
+    else if (type === 'phone') result = await evaluatePhone(content);
+    else result = evaluateClaim(content);
 
     // Get spam report count for all types
     if (type === 'message' || type === 'url' || type === 'phone') {
@@ -282,7 +265,7 @@ else result = evaluateClaim(content);
       result = { ...result, spamReportCount: spamCount };
     }
 
-         // ---------- LOG TO SUPABASE & EXTRACT INDICATORS ----------
+    // ---------- LOG TO SUPABASE & EXTRACT INDICATORS ----------
     const forwardedFor = req.headers.get('x-forwarded-for');
     const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : '';
     const ipHash = crypto.createHash('sha256').update(ip).digest('hex');
@@ -291,9 +274,7 @@ else result = evaluateClaim(content);
     const phones = extractPhones(content);
     const sector = detectSector(content);
 
-    // Fire-and-forget: run everything in an async IIFE
     void (async () => {
-      // 1. Insert the scan event
       const { error: insertError } = await supabase.from('scan_events').insert({
         input_text: content,
         urls_detected: urls,
@@ -307,15 +288,13 @@ else result = evaluateClaim(content);
       });
       if (insertError) console.error('Failed to log scan:', insertError);
 
-      // 2. Upsert each extracted indicator (domains, phones, keywords)
-      //    You can add more indicator types as needed.
       const upsertIndicator = async (type: string, value: string) => {
         const { data, error } = await supabase
           .from('scam_indicators')
           .select('report_count, last_seen, id')
           .eq('indicator_type', type)
           .eq('indicator_value', value)
-          .maybeSingle();  // use maybeSingle to avoid error when no row
+          .maybeSingle();
 
         if (data) {
           await supabase
@@ -339,20 +318,14 @@ else result = evaluateClaim(content);
         }
       };
 
-      // Upsert all detected URLs (treat as domain indicators)
       for (const url of urls) {
-        // Optionally clean the URL to extract domain
         const domain = url.replace(/^https?:\/\//, '').split('/')[0];
         await upsertIndicator('domain', domain);
       }
-      // Upsert all detected phone numbers
       for (const phone of phones) {
         await upsertIndicator('phone', phone);
       }
-      // Optional: extract keywords from reasons and upsert them as 'keyword' type
-      // (you can implement that later)
     })();
-    // ------------------------------------------------------------
 
     return NextResponse.json(result);
   } catch (error) {
