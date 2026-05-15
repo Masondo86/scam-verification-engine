@@ -1,3 +1,4 @@
+import { getIPQSPhoneReputation } from '@/app/services/ipqsPhone';
 import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import { analyzeMessageNLP } from '@/app/lib/nlp-analyze';
@@ -171,24 +172,40 @@ function evaluateUrl(content: string): AnalyzeResponse {
   };
 }
 
-function evaluatePhone(content: string): AnalyzeResponse {
+async function evaluatePhone(content: string): Promise<AnalyzeResponse> {
   const phone = normalizePhone(content);
+  let result: AnalyzeResponse;
 
+  // Existing scam detection (known scam numbers)
   if (KNOWN_SCAM_NUMBERS.includes(phone)) {
-    return {
+    result = {
       riskLevel: 'High',
       confidence: 86,
       reasons: ['Number appears on known scam caller list'],
       recommendation: 'Do not engage. Block the number and report it.',
     };
+  } else {
+    result = {
+      riskLevel: 'Low',
+      confidence: 24,
+      reasons: ['Number is not in known scam list'],
+      recommendation: 'Stay cautious and avoid sharing confidential information.',
+    };
   }
 
-  return {
-    riskLevel: 'Low',
-    confidence: 24,
-    reasons: ['Number is not in known scam list'],
-    recommendation: 'Stay cautious and avoid sharing confidential information.',
-  };
+  // 🔍 IPQualityScore Enhancement
+  const ipqsData = await getIPQSPhoneReputation(phone);
+  if (ipqsData && ipqsData.riskScore > 0) {
+    result.reasons.push(...ipqsData.reasons);
+    // Boost confidence (IPQS riskScore is 0–100, higher is worse)
+    const boost = ipqsData.riskScore * 0.5; // e.g., riskScore 80 → boost 40
+    result.confidence = Math.min(result.confidence + boost, 100);
+    // Re‑evaluate risk level
+    if (result.confidence >= 70) result.riskLevel = 'High';
+    else if (result.confidence >= 40) result.riskLevel = 'Medium';
+  }
+
+  return result;
 }
 
 function evaluateClaim(content: string): AnalyzeResponse {
