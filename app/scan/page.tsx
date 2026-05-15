@@ -330,6 +330,21 @@ export default function Page() {
             </div>
           </section>
 
+          {data.spamReportCount !== undefined && (
+  <div className="glass-panel p-6">
+    <h3 className="font-bold mb-4 text-emerald-300">📞 Phone Reputation</h3>
+    <p className="text-slate-300 text-sm">
+      IPQualityScore risk assessment: 
+      <strong className="ml-1 text-white">
+        {data.reasons.some(r => r.includes('IPQualityScore')) 
+          ? ' Integrated' 
+          : ' Not available'}
+      </strong>
+    </p>
+    {/* Optionally show the raw risk score if you store it */}
+  </div>
+)}
+
           {/* COMMUNITY SPAM REPORT COUNT */}
           {data.spamReportCount !== undefined && (
             <div className="mt-6 p-4 bg-amber-500/10 rounded-lg border border-amber-500/30">
