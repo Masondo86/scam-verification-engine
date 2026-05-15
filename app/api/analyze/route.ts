@@ -271,11 +271,10 @@ export async function POST(req: Request) {
     }
 
     // Run analysis
-    let result: AnalyzeResponse;
-    if (type === 'message') result = evaluateMessage(content);
-    else if (type === 'url') result = evaluateUrl(content);
-    else if (type === 'phone') result = evaluatePhone(content);
-    else result = evaluateClaim(content);
+   if (type === 'message') result = evaluateMessage(content);
+else if (type === 'url') result = evaluateUrl(content);
+else if (type === 'phone') result = await evaluatePhone(content); // ✅ add await
+else result = evaluateClaim(content);
 
     // Get spam report count for all types
     if (type === 'message' || type === 'url' || type === 'phone') {
