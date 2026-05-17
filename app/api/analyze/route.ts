@@ -160,6 +160,7 @@ async function evaluatePhone(content: string): Promise<AnalyzeResponse> {
   const phone = normalizePhone(content);
   let result: AnalyzeResponse;
 
+  // Existing scam detection
   if (KNOWN_SCAM_NUMBERS.includes(phone)) {
     result = {
       riskLevel: 'High',
@@ -176,8 +177,12 @@ async function evaluatePhone(content: string): Promise<AnalyzeResponse> {
     };
   }
 
+  // 🔍 IPQualityScore Enhancement
+  console.log(`[IPQS] Checking phone: ${phone}`);
   const ipqsData = await getIPQSPhoneReputation(phone);
-  if (ipqsData && ipqsData.riskScore > 0) {
+  if (!ipqsData) {
+    console.warn(`[IPQS] No data returned for phone: ${phone}`);
+  } else if (ipqsData.riskScore > 0) {
     result.reasons.push(...ipqsData.reasons);
     const boost = ipqsData.riskScore * 0.5;
     result.confidence = Math.min(result.confidence + boost, 100);
