@@ -1,11 +1,13 @@
 import { getIPQSPhoneReputation } from '@/app/services/ipqsPhone';
+import { getIPQSEmailReputation } from '@/app/services/ipqsEmail';
+import { getIPQSURLReputation } from '@/app/services/ipqsUrl';
 import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import { analyzeMessageNLP } from '@/app/lib/nlp-analyze';
 import { NextResponse } from 'next/server';
 import { knownScams } from '@/app/data/known-scams';
 
-type AnalyzeType = 'message' | 'url' | 'phone' | 'claim';
+type AnalyzeType = 'message' | 'url' | 'phone' | 'claim' | 'email';
 
 type AnalyzeResponse = {
   riskLevel: 'Low' | 'Medium' | 'High';
@@ -17,7 +19,7 @@ type AnalyzeResponse = {
 
 const MESSAGE_FLAGS = ['urgent', 'payment', 'verify', 'suspend', 'otp'];
 const KNOWN_SCAM_NUMBERS = ['+27721234567', '0721234567', '+27831234567'];
-const SUPPORTED_TYPES: AnalyzeType[] = ['message', 'url', 'phone', 'claim'];
+const SUPPORTED_TYPES: AnalyzeType[] = ['message', 'url', 'phone', 'claim', 'email'];
 
 // --------------------------------------------------------------------
 // Supabase client (uses environment variables)
@@ -114,7 +116,7 @@ function evaluateMessage(content: string): AnalyzeResponse {
   return result;
 }
 
-function evaluateUrl(content: string): AnalyzeResponse {
+async function evaluateUrl(content: string): Promise<AnalyzeResponse> {
   const lower = content.toLowerCase();
 
   const knownDomain = knownScams.find((scam) =>
@@ -139,21 +141,39 @@ function evaluateUrl(content: string): AnalyzeResponse {
 
   const suspiciousMatch = suspiciousParts.some((part) => lower.includes(part));
 
+  let result: AnalyzeResponse;
   if (suspiciousMatch) {
-    return {
+    result = {
       riskLevel: 'Medium',
       confidence: 68,
       reasons: ['URL structure resembles known phishing patterns'],
       recommendation: 'Avoid entering credentials. Verify the official domain first.',
     };
+  } else {
+    result = {
+      riskLevel: 'Low',
+      confidence: 28,
+      reasons: ['No direct match to known scam domains'],
+      recommendation: 'Still confirm URL legitimacy before sharing sensitive information.',
+    };
   }
 
-  return {
-    riskLevel: 'Low',
-    confidence: 28,
-    reasons: ['No direct match to known scam domains'],
-    recommendation: 'Still confirm URL legitimacy before sharing sensitive information.',
-  };
+  // IPQS URL reputation (only if not already high)
+  if (result.riskLevel !== 'High') {
+    console.log(`[IPQS] Checking URL: ${content}`);
+    const ipqsData = await getIPQSURLReputation(content);
+    if (!ipqsData) {
+      console.warn(`[IPQS] No data returned for URL: ${content}`);
+    } else if (ipqsData.riskScore > 0) {
+      result.reasons.push(...ipqsData.reasons);
+      const boost = ipqsData.riskScore * 0.5;
+      result.confidence = Math.min(result.confidence + boost, 100);
+      if (result.confidence >= 70) result.riskLevel = 'High';
+      else if (result.confidence >= 40) result.riskLevel = 'Medium';
+    }
+  }
+
+  return result;
 }
 
 async function evaluatePhone(content: string): Promise<AnalyzeResponse> {
@@ -185,6 +205,29 @@ async function evaluatePhone(content: string): Promise<AnalyzeResponse> {
   } else if (ipqsData.riskScore > 0) {
     result.reasons.push(...ipqsData.reasons);
     const boost = ipqsData.riskScore * 0.5;
+    result.confidence = Math.min(result.confidence + boost, 100);
+    if (result.confidence >= 70) result.riskLevel = 'High';
+    else if (result.confidence >= 40) result.riskLevel = 'Medium';
+  }
+
+  return result;
+}
+
+async function evaluateEmail(content: string): Promise<AnalyzeResponse> {
+  let result: AnalyzeResponse = {
+    riskLevel: 'Low',
+    confidence: 15,
+    reasons: ['Basic syntax passed, checking reputation...'],
+    recommendation: 'Proceed with caution. Verify sender independently.',
+  };
+
+  console.log(`[IPQS] Checking email: ${content}`);
+  const ipqsData = await getIPQSEmailReputation(content);
+  if (!ipqsData) {
+    console.warn(`[IPQS] No data returned for email: ${content}`);
+  } else if (ipqsData.fraudScore > 0) {
+    result.reasons.push(...ipqsData.reasons);
+    const boost = ipqsData.fraudScore * 0.6;
     result.confidence = Math.min(result.confidence + boost, 100);
     if (result.confidence >= 70) result.riskLevel = 'High';
     else if (result.confidence >= 40) result.riskLevel = 'Medium';
@@ -260,12 +303,13 @@ export async function POST(req: Request) {
 
     // Run analysis
     if (type === 'message') result = evaluateMessage(content);
-    else if (type === 'url') result = evaluateUrl(content);
+    else if (type === 'url') result = await evaluateUrl(content);
     else if (type === 'phone') result = await evaluatePhone(content);
+    else if (type === 'email') result = await evaluateEmail(content);
     else result = evaluateClaim(content);
 
-    // Get spam report count for all types
-    if (type === 'message' || type === 'url' || type === 'phone') {
+    // Get spam report count for all types except claim
+    if (type === 'message' || type === 'url' || type === 'phone' || type === 'email') {
       const spamCount = await getSpamReportCount(type, content);
       result = { ...result, spamReportCount: spamCount };
     }
