@@ -1,5 +1,7 @@
 // app/services/ipqsPhone.ts
 
+import { getCached, setCached } from '@/app/lib/cache';
+
 export interface IPQSPhoneResult {
   success: boolean;
   riskScore: number;
@@ -41,6 +43,14 @@ export async function getIPQSPhoneReputation(phoneNumber: string): Promise<IPQSP
     return null;
   }
 
+  // Check cache first
+  const cacheKey = `phone:${normalized}`;
+  const cached = getCached<IPQSPhoneResult>(cacheKey);
+  if (cached) {
+    console.log(`[IPQS] Cache hit for phone: ${normalized}`);
+    return cached;
+  }
+
   // Explicitly tell IPQS the number is from South Africa
   const country = 'ZA';
   const url = `https://ipqualityscore.com/api/json/phone/${apiKey}/${encodeURIComponent(normalized)}?country=${country}`;
@@ -77,12 +87,17 @@ export async function getIPQSPhoneReputation(phoneNumber: string): Promise<IPQSP
     if (data.leaked === true) reasons.push('This number has been found in data breaches or scam lists');
     if (data.spam_score && data.spam_score > 70) reasons.push(`IPQualityScore spam score: ${data.spam_score}%`);
 
-    return {
+    const result: IPQSPhoneResult = {
       success: true,
       riskScore,
       reasons,
       raw: data,
     };
+
+    // Cache for 24 hours (86400 seconds)
+    setCached(cacheKey, result, 86400);
+
+    return result;
   } catch (err) {
     console.error('[IPQS] Request failed:', err);
     return null;
