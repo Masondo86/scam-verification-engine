@@ -40,7 +40,7 @@ const masterFaqSchema = {
       name: 'How does scam detection work in South Africa?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Scam detection combines device fingerprinting, digital footprint analysis, behavioral signals and known fraud intelligence patterns aligned with South African financial crime regulations.'
+        text: 'Scam detection combines device fingerprinting, digital footprint analysis, behavioral signals and known fraud intelligence patterns aligned with South African financial crime regula[...]'
       },
     },
     {
@@ -104,7 +104,7 @@ export default function HomePage() {
             {/* Trust badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-100 text-indigo-700 text-sm mb-8">
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0110 1.944 11.954 11.954 0 0117.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.056-1.351.166-2.001zm11.334 5.834a1 1 0 00-1.414-1.414L9 10.586 7.414 9a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0110 1.944 11.954 11.954 0 0117.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.[...]" />
               </svg>
               Trusted by South Africans
             </div>
@@ -127,7 +127,7 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Link 
                 href="/scan"
-                className="group px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-semibold text-white shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all hover:scale-105"
+                className="group px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-semibold text-white shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all ho[...]"
               >
                 Start Free Scan
                 <svg className="inline-block ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,7 +201,7 @@ export default function HomePage() {
             <div className="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition-shadow border border-slate-100">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center mb-4">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.[...]" />
                 </svg>
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-3">Privacy First</h3>
@@ -290,7 +290,7 @@ export default function HomePage() {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             <Link href="/how-scams-work" className="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition-all group border border-slate-100">
               <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">🎯</div>
               <h3 className="text-2xl font-bold text-slate-900 mb-3">How Scams Work</h3>
@@ -327,6 +327,20 @@ export default function HomePage() {
               </p>
               <div className="text-indigo-600 font-semibold flex items-center gap-2">
                 Read More
+                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
+
+            <Link href="/digital-footprint-hub" className="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition-all group border border-slate-100">
+              <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">🧭</div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-3">Digital Footprint</h3>
+              <p className="text-slate-600 mb-4">
+                Explore how online signals, domain history and presence affect trust and risk
+              </p>
+              <div className="text-indigo-600 font-semibold flex items-center gap-2">
+                Learn More
                 <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
@@ -400,7 +414,7 @@ export default function HomePage() {
           </p>
           <Link 
             href="/scan"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-semibold text-white text-lg shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-shadow hover:scale-105"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-semibold text-white text-lg shadow-lg shadow-indigo-200 hover:shadow[...]"
           >
             Start Free Scan
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -410,6 +424,21 @@ export default function HomePage() {
           <p className="text-slate-500 text-sm mt-4">
             No registration • 100% free • Powered by The Link Digital Security
           </p>
+        </div>
+      </section>
+
+      {/* DIGITAL FOOTPRINT PROMO BANNER (above footer) */}
+      <section className="py-8 bg-indigo-600 text-white">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div>
+            <h3 className="text-2xl font-bold">Discover the Digital Footprint Hub</h3>
+            <p className="text-slate-100 mt-1">Learn how domain history, ownership signals and online presence affect scam risk.</p>
+          </div>
+          <div>
+            <Link href="/digital-footprint-hub" className="inline-flex items-center gap-2 px-6 py-3 bg-white text-indigo-700 rounded-xl font-semibold hover:bg-slate-100 transition">
+              Learn More
+n            </Link>
+          </div>
         </div>
       </section>
 
@@ -434,6 +463,7 @@ export default function HomePage() {
                 <li><Link href="/whatsapp-scams" className="text-slate-600 hover:text-indigo-600 transition-colors">WhatsApp Scams</Link></li>
                 <li><Link href="/banking-fraud-south-africa" className="text-slate-600 hover:text-indigo-600 transition-colors">Banking Fraud</Link></li>
                 <li><Link href="/payday-loan-scams" className="text-slate-600 hover:text-indigo-600 transition-colors">Payday Loan Scams</Link></li>
+                <li><Link href="/digital-footprint-hub" className="text-slate-600 hover:text-indigo-600 transition-colors">Digital Footprint</Link></li>
               </ul>
             </div>
             <div>
