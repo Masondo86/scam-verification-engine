@@ -36,6 +36,17 @@ Coordinated disclosure timelines will be discussed where appropriate
 
 We appreciate responsible security research that helps protect the public.
 
+## Data Minimization for Waitlist
+
+The waitlist feature for the Digital Footprint Scanner follows strict data minimization principles:
+
+- **No personal data stored beyond email address** – we do not store ID numbers, phone numbers, addresses, or any other personal identifiers
+- **Supabase RLS (Row Level Security)** – the `waitlist` table is protected with Row Level Security policies
+- **Service role only access** – only the backend service role (via `/api/waitlist`) can write to the table
+- **No public access** – anonymous and authenticated users cannot directly access the waitlist table
+- **Encryption at rest** – all data is encrypted using Supabase's built-in encryption
+- **Data retention** – email records are kept until the scanner launches or the user requests deletion
+
 Scope
 
 This policy applies to:
