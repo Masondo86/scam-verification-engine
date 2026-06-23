@@ -1,20 +1,63 @@
-// app/digital-footprint-hub/page.tsx
+'use client';
+
 import Link from 'next/link';
 import { Metadata } from 'next';
+import { useState } from 'react';
 
-export const metadata: Metadata = {
-  title: 'Digital Footprint Scanner | Check Your Online Exposure',
-  description: 'Discover how your personal data is exposed online. Learn about email breaches, phone number spam risks, and device vulnerabilities. Get actionable protection steps.',
-  keywords: 'digital footprint, data breach check, email scanner, phone reputation, device security',
-  openGraph: {
-    title: 'Digital Footprint Scanner – Know Your Risk',
-    description: 'Understand your digital exposure. Email, phone, device – one unified risk score.',
-    url: 'https://checkascam.co.za/digital-footprint-hub',
-    type: 'website',
-  },
-};
+// Note: metadata is still server-side, but we need to keep it separate
+// This file is now a Client Component due to waitlist state management
 
 export default function DigitalFootprintHub() {
+  const [waitlistEmail, setWaitlistEmail] = useState('');
+  const [waitlistTier, setWaitlistTier] = useState<'R29' | 'R59'>('R59');
+  const [waitlistSubmitted, setWaitlistSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleWaitlistSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setErrorMessage('');
+
+    try {
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: waitlistEmail,
+          tier: waitlistTier,
+          source: 'digital-footprint-hub',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to join waitlist');
+      }
+
+      setWaitlistSubmitted(true);
+      setWaitlistEmail('');
+      // Reset after 5 seconds
+      setTimeout(() => {
+        setWaitlistSubmitted(false);
+      }, 5000);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'An error occurred. Please try again.';
+      setErrorMessage(message);
+      console.error('Waitlist error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleNotifyClick = (tier: 'R29' | 'R59') => {
+    setWaitlistTier(tier);
+    document.getElementById('waitlist-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <main className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -125,7 +168,7 @@ export default function DigitalFootprintHub() {
           <h2 className="text-3xl font-bold text-slate-900 text-center mb-4">Simple, Transparent Pricing</h2>
           <p className="text-center text-slate-600 mb-12">One‑time scans – no subscriptions. Pay only when you check.</p>
           <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            {/* Email + Phone Scan */}
+            {/* Email + Phone Scan – R29 */}
             <div className="bg-white rounded-2xl shadow-lg border border-indigo-100 p-6 text-center">
               <div className="text-indigo-600 text-sm font-semibold uppercase mb-2">Most Popular</div>
               <div className="text-4xl font-bold text-slate-900 mb-2">R29</div>
@@ -138,13 +181,16 @@ export default function DigitalFootprintHub() {
                 <li>✅ Unified risk score</li>
                 <li>✅ Actionable recommendations (PDF report)</li>
               </ul>
-              <button disabled className="bg-slate-200 text-slate-500 px-6 py-2 rounded-xl font-semibold cursor-not-allowed">
-                Coming Soon
+              <button
+                onClick={() => handleNotifyClick('R29')}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl font-semibold transition"
+              >
+                Notify Me When Available
               </button>
               <p className="text-xs text-slate-400 mt-3">Launching end of July 2026</p>
             </div>
 
-            {/* Full Package (Email + Phone + Device) */}
+            {/* Full Package (Email + Phone + Device) – R59 */}
             <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 text-center">
               <div className="text-4xl font-bold text-slate-900 mb-2">R59</div>
               <div className="text-slate-500 mb-6">one‑time scan</div>
@@ -156,8 +202,11 @@ export default function DigitalFootprintHub() {
                 <li>✅ Priority support</li>
                 <li>✅ Detailed remediation checklist</li>
               </ul>
-              <button disabled className="bg-slate-200 text-slate-500 px-6 py-2 rounded-xl font-semibold cursor-not-allowed">
-                Coming Soon
+              <button
+                onClick={() => handleNotifyClick('R59')}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl font-semibold transition"
+              >
+                Notify Me When Available
               </button>
               <p className="text-xs text-slate-400 mt-3">Launching end of July 2026</p>
             </div>
@@ -169,29 +218,53 @@ export default function DigitalFootprintHub() {
       </section>
 
       {/* Waitlist / Notify Me */}
-      <section className="bg-gradient-to-br from-indigo-50 to-purple-50 py-16">
+      <section id="waitlist-section" className="bg-gradient-to-br from-indigo-50 to-purple-50 py-16">
         <div className="max-w-2xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-slate-900 mb-4">Be the First to Know</h2>
+          <h2 className="text-3xl font-bold text-slate-900 mb-4">
+            Get Early Access – {waitlistTier}
+          </h2>
           <p className="text-slate-600 mb-6">
-            We’re putting the final touches on the Digital Footprint Scanner.  
-            Leave your email and we’ll notify you as soon as it launches – plus a special launch discount.
+            We're putting the final touches on the Digital Footprint Scanner.  
+            Leave your email and we'll notify you as soon as it launches – plus a special launch discount.
           </p>
-          <form action="/api/waitlist" method="POST" className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input
-              type="email"
-              name="email"
-              placeholder="Your email address"
-              required
-              className="flex-1 px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500"
-            />
-            <button
-              type="submit"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition"
-            >
-              Notify Me
-            </button>
-          </form>
-          <p className="text-xs text-slate-500 mt-4">We respect your privacy. No spam, unsubscribe anytime.</p>
+
+          {waitlistSubmitted ? (
+            <div className="max-w-md mx-auto p-6 bg-emerald-50 border border-emerald-200 rounded-xl">
+              <div className="text-emerald-600 text-3xl mb-2">✓</div>
+              <div className="text-emerald-900 font-semibold mb-2">Thank you for joining!</div>
+              <div className="text-emerald-800 text-sm">
+                We'll notify you at {waitlistEmail} when the {waitlistTier} scan launches with a special discount code.
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleWaitlistSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto mb-4">
+              <input
+                type="email"
+                value={waitlistEmail}
+                onChange={(e) => setWaitlistEmail(e.target.value)}
+                placeholder="Your email address"
+                required
+                className="flex-1 px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              />
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-400 text-white px-6 py-3 rounded-xl font-semibold transition"
+              >
+                {isLoading ? 'Submitting...' : 'Notify Me'}
+              </button>
+            </form>
+          )}
+
+          {errorMessage && (
+            <div className="max-w-md mx-auto p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm mb-4">
+              {errorMessage}
+            </div>
+          )}
+
+          <p className="text-xs text-slate-500 mt-4">
+            🔒 We respect your privacy. No spam. Unsubscribe anytime.
+          </p>
         </div>
       </section>
 
