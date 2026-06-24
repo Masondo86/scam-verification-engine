@@ -158,18 +158,28 @@ async function evaluateUrl(content: string): Promise<AnalyzeResponse> {
     };
   }
 
-  // IPQS URL reputation (only if not already high)
+  // 🔍 IPQS URL Reputation (only if not already High)
   if (result.riskLevel !== 'High') {
     console.log(`[IPQS] Checking URL: ${content}`);
     const ipqsData = await getIPQSURLReputation(content);
+
     if (!ipqsData) {
       console.warn(`[IPQS] No data returned for URL: ${content}`);
-    } else if (ipqsData.riskScore > 0) {
+    } else {
       result.reasons.push(...ipqsData.reasons);
-      const boost = ipqsData.riskScore * 0.5;
-      result.confidence = Math.min(result.confidence + boost, 100);
-      if (result.confidence >= 70) result.riskLevel = 'High';
-      else if (result.confidence >= 40) result.riskLevel = 'Medium';
+
+      if (ipqsData.riskScore >= 85) {
+        result.confidence = Math.max(result.confidence, 90);
+        result.riskLevel = 'High';
+      } else if (ipqsData.riskScore >= 60) {
+        result.confidence = Math.max(result.confidence, 75);
+        result.riskLevel = 'High';
+      } else if (ipqsData.riskScore >= 30) {
+        result.confidence = Math.max(result.confidence, 50);
+        if (result.riskLevel === 'Low') result.riskLevel = 'Medium';
+      } else {
+        result.confidence = Math.min(result.confidence + ipqsData.riskScore, 100);
+      }
     }
   }
 
@@ -180,7 +190,6 @@ async function evaluatePhone(content: string): Promise<AnalyzeResponse> {
   const phone = normalizePhone(content);
   let result: AnalyzeResponse;
 
-  // Existing scam detection
   if (KNOWN_SCAM_NUMBERS.includes(phone)) {
     result = {
       riskLevel: 'High',
@@ -197,17 +206,26 @@ async function evaluatePhone(content: string): Promise<AnalyzeResponse> {
     };
   }
 
-  // 🔍 IPQualityScore Enhancement
   console.log(`[IPQS] Checking phone: ${phone}`);
   const ipqsData = await getIPQSPhoneReputation(phone);
+
   if (!ipqsData) {
     console.warn(`[IPQS] No data returned for phone: ${phone}`);
-  } else if (ipqsData.riskScore > 0) {
+  } else {
     result.reasons.push(...ipqsData.reasons);
-    const boost = ipqsData.riskScore * 0.5;
-    result.confidence = Math.min(result.confidence + boost, 100);
-    if (result.confidence >= 70) result.riskLevel = 'High';
-    else if (result.confidence >= 40) result.riskLevel = 'Medium';
+
+    if (ipqsData.riskScore >= 85) {
+      result.confidence = Math.max(result.confidence, 90);
+      result.riskLevel = 'High';
+    } else if (ipqsData.riskScore >= 60) {
+      result.confidence = Math.max(result.confidence, 75);
+      result.riskLevel = 'High';
+    } else if (ipqsData.riskScore >= 30) {
+      result.confidence = Math.max(result.confidence, 50);
+      if (result.riskLevel === 'Low') result.riskLevel = 'Medium';
+    } else {
+      result.confidence = Math.min(result.confidence + ipqsData.riskScore, 100);
+    }
   }
 
   return result;
@@ -223,14 +241,24 @@ async function evaluateEmail(content: string): Promise<AnalyzeResponse> {
 
   console.log(`[IPQS] Checking email: ${content}`);
   const ipqsData = await getIPQSEmailReputation(content);
+
   if (!ipqsData) {
     console.warn(`[IPQS] No data returned for email: ${content}`);
-  } else if (ipqsData.fraudScore > 0) {
+  } else {
     result.reasons.push(...ipqsData.reasons);
-    const boost = ipqsData.fraudScore * 0.6;
-    result.confidence = Math.min(result.confidence + boost, 100);
-    if (result.confidence >= 70) result.riskLevel = 'High';
-    else if (result.confidence >= 40) result.riskLevel = 'Medium';
+
+    if (ipqsData.fraudScore >= 85) {
+      result.confidence = Math.max(result.confidence, 90);
+      result.riskLevel = 'High';
+    } else if (ipqsData.fraudScore >= 60) {
+      result.confidence = Math.max(result.confidence, 75);
+      result.riskLevel = 'High';
+    } else if (ipqsData.fraudScore >= 30) {
+      result.confidence = Math.max(result.confidence, 50);
+      if (result.riskLevel === 'Low') result.riskLevel = 'Medium';
+    } else {
+      result.confidence = Math.min(result.confidence + ipqsData.fraudScore, 100);
+    }
   }
 
   return result;
@@ -298,17 +326,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unsupported type' }, { status: 400 });
     }
 
-    // Declare result variable
-    let result: AnalyzeResponse;
-
     // Run analysis
+    let result: AnalyzeResponse;
     if (type === 'message') result = evaluateMessage(content);
     else if (type === 'url') result = await evaluateUrl(content);
     else if (type === 'phone') result = await evaluatePhone(content);
     else if (type === 'email') result = await evaluateEmail(content);
     else result = evaluateClaim(content);
 
-    // Get spam report count for all types except claim
+    // Get spam report count
     if (type === 'message' || type === 'url' || type === 'phone' || type === 'email') {
       const spamCount = await getSpamReportCount(type, content);
       result = { ...result, spamReportCount: spamCount };
