@@ -1,8 +1,10 @@
+// app/api/analyze/route.ts
 import { getIPQSPhoneReputation } from '@/app/services/ipqsPhone';
 import { getIPQSEmailReputation } from '@/app/services/ipqsEmail';
 import { getIPQSURLReputation } from '@/app/services/ipqsUrl';
 import { checkPresence } from '@/app/services/trust-signals/presence';
 import { fetchNews } from '@/app/services/trust-signals/news';
+import { searchWeb } from '@/app/services/trust-signals/search';
 import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import { analyzeMessageNLP } from '@/app/lib/nlp-analyze';
@@ -125,6 +127,7 @@ async function evaluateUrl(content: string): Promise<AnalyzeResponse> {
     scam.domains.some((domain) => lower.includes(domain.toLowerCase()))
   );
 
+  // If a known scam is matched, return High immediately
   if (knownDomain) {
     return {
       riskLevel: 'High',
@@ -148,14 +151,15 @@ async function evaluateUrl(content: string): Promise<AnalyzeResponse> {
     result = {
       riskLevel: 'Medium',
       confidence: 68,
-      reasons: ['URL structure resembles known phishing patterns'],
+      reasons: ['Suspicious URL structure detected'],
       recommendation: 'Avoid entering credentials. Verify the official domain first.',
     };
   } else {
+    // Low risk – no "No direct match" message; let IPQS and other signals add reasons
     result = {
       riskLevel: 'Low',
       confidence: 28,
-      reasons: [], // Empty reasons – let IPQS and other signals add their own
+      reasons: [], // will be populated by IPQS and trust signals
       recommendation: 'Still confirm URL legitimacy before sharing sensitive information.',
     };
   }
@@ -358,8 +362,9 @@ export async function POST(req: Request) {
         }
 
         // 2. News Check (using domain)
+        let news = null;
         if (domain) {
-          const news = await fetchNews(domain);
+          news = await fetchNews(domain);
           if (news.negativeCount > 0) {
             result.reasons.push(`Found ${news.negativeCount} negative news mentions for domain ${domain}`);
             const boost = Math.min(news.negativeCount * 5, 20);
@@ -368,15 +373,32 @@ export async function POST(req: Request) {
             else if (result.confidence >= 40) result.riskLevel = 'Medium';
           }
         }
+
+        // 3. Search fallback if news returned 0 results
+        if (news && news.total === 0 && domain) {
+          const searchResults = await searchWeb(domain);
+          if (searchResults.length > 0) {
+            const negative = searchResults.filter(r => r.sentiment === 'negative');
+            if (negative.length > 0) {
+              result.reasons.push(`Found ${negative.length} negative web search results for "${domain}" (e.g., "${negative[0].title}")`);
+              const boost = Math.min(negative.length * 3, 15);
+              result.confidence = Math.min(result.confidence + boost, 100);
+              if (result.confidence >= 70) result.riskLevel = 'High';
+              else if (result.confidence >= 40) result.riskLevel = 'Medium';
+            }
+          }
+        }
       } else if (type === 'url') {
-        // For URL, extract domain and check news
+        // Extract domain from URL
         let domain = content;
         try {
           const urlObj = new URL(content);
           domain = urlObj.hostname;
         } catch {
-          // If not a valid URL, use as is
+          // use as is
         }
+
+        // News check
         const news = await fetchNews(domain);
         if (news.negativeCount > 0) {
           result.reasons.push(`Found ${news.negativeCount} negative news mentions for domain ${domain}`);
@@ -384,6 +406,21 @@ export async function POST(req: Request) {
           result.confidence = Math.min(result.confidence + boost, 100);
           if (result.confidence >= 70) result.riskLevel = 'High';
           else if (result.confidence >= 40) result.riskLevel = 'Medium';
+        }
+
+        // Search fallback if news returned 0 results
+        if (news.total === 0) {
+          const searchResults = await searchWeb(domain);
+          if (searchResults.length > 0) {
+            const negative = searchResults.filter(r => r.sentiment === 'negative');
+            if (negative.length > 0) {
+              result.reasons.push(`Found ${negative.length} negative web search results for "${domain}" (e.g., "${negative[0].title}")`);
+              const boost = Math.min(negative.length * 3, 15);
+              result.confidence = Math.min(result.confidence + boost, 100);
+              if (result.confidence >= 70) result.riskLevel = 'High';
+              else if (result.confidence >= 40) result.riskLevel = 'Medium';
+            }
+          }
         }
       }
     } catch (err) {
