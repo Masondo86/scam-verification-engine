@@ -1,6 +1,8 @@
 import { getIPQSPhoneReputation } from '@/app/services/ipqsPhone';
 import { getIPQSEmailReputation } from '@/app/services/ipqsEmail';
 import { getIPQSURLReputation } from '@/app/services/ipqsUrl';
+import { checkPresence } from '@/app/services/trust-signals/presence';
+import { fetchNews } from '@/app/services/trust-signals/news';
 import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import { analyzeMessageNLP } from '@/app/lib/nlp-analyze';
@@ -339,6 +341,56 @@ export async function POST(req: Request) {
       const spamCount = await getSpamReportCount(type, content);
       result = { ...result, spamReportCount: spamCount };
     }
+
+    // ---------- TRUST SIGNAL ENGINE INTEGRATION ----------
+    // Only for email and URL scans (for now)
+    try {
+      if (type === 'email') {
+        const username = content.split('@')[0];
+        const domain = content.split('@')[1];
+
+        // 1. Social Presence Check
+        const presence = await checkPresence(username);
+        if (presence.foundCount > 0) {
+          result.reasons.push(`Found ${presence.foundCount} public profiles (e.g., GitHub, LinkedIn, etc.)`);
+          // Small confidence boost
+          result.confidence = Math.min(result.confidence + 5, 100);
+        }
+
+        // 2. News Check (using domain)
+        if (domain) {
+          const news = await fetchNews(domain);
+          if (news.negativeCount > 0) {
+            result.reasons.push(`Found ${news.negativeCount} negative news mentions for domain ${domain}`);
+            const boost = Math.min(news.negativeCount * 5, 20);
+            result.confidence = Math.min(result.confidence + boost, 100);
+            if (result.confidence >= 70) result.riskLevel = 'High';
+            else if (result.confidence >= 40) result.riskLevel = 'Medium';
+          }
+        }
+      } else if (type === 'url') {
+        // For URL, extract domain and check news
+        let domain = content;
+        try {
+          const urlObj = new URL(content);
+          domain = urlObj.hostname;
+        } catch {
+          // If not a valid URL, use as is
+        }
+        const news = await fetchNews(domain);
+        if (news.negativeCount > 0) {
+          result.reasons.push(`Found ${news.negativeCount} negative news mentions for domain ${domain}`);
+          const boost = Math.min(news.negativeCount * 5, 20);
+          result.confidence = Math.min(result.confidence + boost, 100);
+          if (result.confidence >= 70) result.riskLevel = 'High';
+          else if (result.confidence >= 40) result.riskLevel = 'Medium';
+        }
+      }
+    } catch (err) {
+      console.error('[Trust Signal] Integration error:', err);
+      // Do not fail the scan; just log the error
+    }
+    // ---------- END TRUST SIGNAL INTEGRATION ----------
 
     // ---------- LOG TO SUPABASE & EXTRACT INDICATORS ----------
     const forwardedFor = req.headers.get('x-forwarded-for');
