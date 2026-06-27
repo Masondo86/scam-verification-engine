@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import type { AnalyzeResponse, ScanType } from '@/app/lib/types';
 
 const BANK_HELP: Record<string, string> = {
@@ -44,7 +45,7 @@ function detectInputType(input: string): { type: ScanType; extracted: string } {
 }
 
 // Map detected type to API-supported types
-function mapToApiType(type: ScanType): 'message' | 'url' | 'phone' | 'claim' {
+function mapToApiType(type: ScanType): 'message' | 'url' | 'phone' | 'claim' | 'email' {
   switch (type) {
     case 'email':
     case 'url':
@@ -64,8 +65,6 @@ export default function Page() {
   const [data, setData] = useState<AnalyzeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [analyzedInput, setAnalyzedInput] = useState<{ original: string; type: ScanType; extracted: string } | null>(null);
-  const [reportLoading, setReportLoading] = useState(false);
-  const [reportMessage, setReportMessage] = useState<string | null>(null);
 
   async function analyze() {
     if (!input.trim()) {
@@ -106,47 +105,12 @@ export default function Page() {
     }
   }
 
-  async function handleReportAsSpam() {
-    if (!analyzedInput || !data) return;
-
-    setReportLoading(true);
-    setReportMessage(null);
-
-    try {
-      const reportType = analyzedInput.type === 'url' ? 'url' :
-                         analyzedInput.type === 'email' ? 'url' :
-                         analyzedInput.type === 'phone' ? 'phone' : 'message';
-      const reportContent = analyzedInput.extracted;
-
-      const res = await fetch('/api/spam/report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: reportType, content: reportContent }),
-      });
-
-      if (res.ok) {
-        setReportMessage('✅ Thank you for reporting. This helps the community stay safe.');
-        // Increment local count
-        if (data.spamReportCount !== undefined) {
-          setData({ ...data, spamReportCount: data.spamReportCount + 1 });
-        }
-      } else {
-        const errorData = await res.json();
-        setReportMessage(`⚠️ ${errorData.error || 'Failed to submit report. Please try again later.'}`);
-      }
-    } catch (err) {
-      setReportMessage('⚠️ An error occurred while submitting your report.');
-    } finally {
-      setReportLoading(false);
-    }
-  }
-
   const circumference = 2 * Math.PI * 45;
   const offset = data
     ? circumference - (data.confidence / 100) * circumference
     : circumference;
 
-  // Get actionable recommendation (based on riskLevel)
+  // Get actionable recommendation
   const getRecommendation = () => {
     if (!data) return null;
 
@@ -186,6 +150,24 @@ export default function Page() {
     }
   };
 
+  // Helper to check if any reason is an IPQS signal
+  const hasIqpsSignals = (reasons: string[]) => {
+    const keywords = ['new domain', 'low traffic', 'phishing', 'suspicious', 'malicious', 'spam', 'fraud'];
+    return reasons.some(r => keywords.some(k => r.toLowerCase().includes(k)));
+  };
+
+  // Get IPQS-specific reasons for Threat Timeline
+  const getIqpsTimelineItems = (reasons: string[]) => {
+    const keywords = ['new domain', 'low traffic', 'phishing', 'suspicious', 'malicious', 'spam', 'fraud'];
+    return reasons.filter(r => keywords.some(k => r.toLowerCase().includes(k)));
+  };
+
+  // Get non-IPQS reasons for Risk Indicators
+  const getNonIqpsReasons = (reasons: string[]) => {
+    const keywords = ['new domain', 'low traffic', 'phishing', 'suspicious', 'malicious', 'spam', 'fraud'];
+    return reasons.filter(r => !keywords.some(k => r.toLowerCase().includes(k)));
+  };
+
   return (
     <main className="max-w-7xl mx-auto px-4 py-10" aria-live="polite">
       {/* HEADER */}
@@ -196,13 +178,6 @@ export default function Page() {
         <p className="text-slate-400 mt-3">Understand risk. Stop fraud. Stay protected.</p>
         <p className="text-slate-500 text-sm mt-2">Powered by The Link Digital Security</p>
       </header>
-
-      {/* TRUST CONTEXT LINE - NEW */}
-      <section className="text-center mb-8 px-4">
-        <p className="text-slate-400 text-base">
-          Paste a phone number, link, email, or suspicious message below. Get a free risk score in seconds — no signup required.
-        </p>
-      </section>
 
       {/* INPUT */}
       <section className="glass-panel p-6 shadow-indigo">
@@ -216,7 +191,7 @@ export default function Page() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && analyze()}
             className="flex-1 bg-slate-900/70 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="e.g. 0821234567, https://example.com, or paste a suspicious message"
+            placeholder="URL, phone number, email or message text"
             disabled={loading}
           />
           <button
@@ -227,43 +202,6 @@ export default function Page() {
             {loading ? 'Scanning…' : 'Analyze'}
           </button>
         </div>
-
-        {/* TRY AN EXAMPLE LINK - NEW */}
-        <div className="mt-4 text-center">
-          <button
-            onClick={() => setInput('https://google.com')}
-            className="text-indigo-400 hover:text-indigo-300 text-sm underline transition-colors"
-            disabled={loading}
-          >
-            Try an example
-          </button>
-        </div>
-      </section>
-
-      {/* TRUST BADGES ROW - NEW */}
-      {!data && (
-        <section className="mt-6 flex flex-wrap justify-center gap-6 px-4">
-          <div className="flex items-center gap-2 text-sm text-slate-400">
-            <span className="text-emerald-400">✓</span>
-            <span>Google Safe Browsing</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-slate-400">
-            <span className="text-emerald-400">✓</span>
-            <span>IPQS Verified</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-slate-400">
-            <span className="text-emerald-400">✓</span>
-            <span>No data stored</span>
-          </div>
-        </section>
-      )}
-
-      {/* SOCIAL PROOF LINE - NEW */}
-      <section className="mt-6 text-center">
-        <p className="text-slate-500 text-sm">
-          {/* TODO: wire up real scan count */}
-          300+ South Africans have verified suspicious messages this month
-        </p>
       </section>
 
       {/* WHAT WAS ANALYZED */}
@@ -349,54 +287,47 @@ export default function Page() {
               </p>
             </div>
 
-            {/* THREAT TIMELINE */}
+            {/* THREAT TIMELINE – NOW POPULATED FROM IPQS SIGNALS */}
             <div className="glass-panel p-6">
               <h3 className="font-bold mb-4 text-indigo-300">Threat Timeline</h3>
               <div className="timeline">
-                <p className="text-slate-400 text-sm">No timeline data available</p>
+                {data.reasons && data.reasons.length > 0 && hasIqpsSignals(data.reasons) ? (
+                  <ul className="list-disc pl-5 space-y-1 text-slate-300 text-sm">
+                    {getIqpsTimelineItems(data.reasons).map((reason, idx) => (
+                      <li key={idx} className="text-yellow-300">
+                        ⚠️ {reason}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-slate-400 text-sm">No significant threat signals detected.</p>
+                )}
               </div>
             </div>
 
-            {/* RISK FACTORS (REASONS FROM API) */}
+            {/* RISK INDICATORS – SIMPLIFIED SUMMARY */}
             <div className="glass-panel p-6">
               <h3 className="font-bold mb-4 text-purple-300">Risk Indicators</h3>
               {data.reasons && data.reasons.length > 0 ? (
-                <ul className="list-disc pl-5 space-y-2 text-slate-300">
-                  {data.reasons.map((reason, idx) => (
-                    <li key={idx} className="text-sm">
-                      {reason}
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  <ul className="list-disc pl-5 space-y-2 text-slate-300">
+                    {getNonIqpsReasons(data.reasons).map((reason, idx) => (
+                      <li key={idx} className="text-sm">
+                        {reason}
+                      </li>
+                    ))}
+                  </ul>
+                  {hasIqpsSignals(data.reasons) && (
+                    <div className="mt-3 text-sm text-yellow-300 font-semibold border-t border-yellow-500/30 pt-2">
+                      🚩 Suspicious characteristics detected
+                    </div>
+                  )}
+                </>
               ) : (
                 <p className="text-slate-400 text-sm">No specific risk indicators found.</p>
               )}
             </div>
           </section>
-
-          {data.spamReportCount !== undefined && (
-  <div className="glass-panel p-6">
-    <h3 className="font-bold mb-4 text-emerald-300">📞 Phone Reputation</h3>
-    <p className="text-slate-300 text-sm">
-      IPQualityScore risk assessment: 
-      <strong className="ml-1 text-white">
-        {data.reasons.some(r => r.includes('IPQualityScore')) 
-          ? ' Integrated' 
-          : ' Not available'}
-      </strong>
-    </p>
-    {/* Optionally show the raw risk score if you store it */}
-  </div>
-)}
-
-          {/* COMMUNITY SPAM REPORT COUNT */}
-          {data.spamReportCount !== undefined && (
-            <div className="mt-6 p-4 bg-amber-500/10 rounded-lg border border-amber-500/30">
-              <p className="text-amber-200 text-sm">
-                📢 This item has been reported as spam <strong>{data.spamReportCount}</strong> time{data.spamReportCount !== 1 ? 's' : ''} by our community.
-              </p>
-            </div>
-          )}
 
           {/* ACTIONABLE RECOMMENDATIONS */}
           {(() => {
@@ -435,21 +366,14 @@ export default function Page() {
             );
           })()}
 
-          {/* REPORT AS SPAM BUTTON */}
-          <div className="mt-6 flex flex-col gap-3 items-center">
-            <button
-              onClick={handleReportAsSpam}
-              disabled={reportLoading}
-              className="bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {reportLoading ? '📤 Submitting report...' : '🚨 Report this ' + (analyzedInput?.type === 'url' || analyzedInput?.type === 'email' ? 'URL' : analyzedInput?.type === 'phone' ? 'phone number' : 'message')}
-            </button>
-            {reportMessage && (
-              <p className={`text-xs ${reportMessage.includes('✅') ? 'text-green-300' : 'text-amber-300'}`}>
-                {reportMessage}
+          {/* SPAM REPORT COUNT */}
+          {data.spamReportCount !== undefined && (
+            <div className="mt-6 glass-panel p-4 border-yellow-500/30 bg-yellow-500/5">
+              <p className="text-yellow-300 text-sm">
+                ⚠️ This item has been reported as spam <strong>{data.spamReportCount}</strong> time{data.spamReportCount !== 1 ? 's' : ''} by our community.
               </p>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* ESCALATION BUTTON (only for High risk) */}
           {data.riskLevel === 'High' && (
