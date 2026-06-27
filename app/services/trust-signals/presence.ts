@@ -1,7 +1,7 @@
 // app/services/trust-signals/presence.ts
 
-import { PresenceSignal, PresenceResponse } from '@/lib/trust-signals/types';
-import { PLATFORMS, Platform } from '@/lib/trust-signals/presence-platforms';
+import { PresenceSignal, PresenceResponse } from '@/app/lib/trust-signals/types';
+import { PLATFORMS, Platform } from '@/app/lib/trust-signals/presence-platforms';
 
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 const cache = new Map<string, { timestamp: number; signals: PresenceSignal[] }>();
@@ -73,7 +73,6 @@ async function checkPlatform(username: string, platform: Platform): Promise<Pres
       method: platform.method || 'HEAD',
       redirect: 'follow',
       signal: controller.signal,
-      // Some platforms may require a user-agent
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; TheLinkDigital/1.0)',
       },
@@ -81,9 +80,6 @@ async function checkPlatform(username: string, platform: Platform): Promise<Pres
 
     clearTimeout(timeout);
 
-    // Check if the profile exists
-    // Many platforms return 200 for existing profiles, 404 for missing
-    // Some might return 302 to login pages – we treat that as "maybe exists" with lower confidence
     let found = false;
     let confidence = 0;
 
@@ -94,20 +90,15 @@ async function checkPlatform(username: string, platform: Platform): Promise<Pres
       found = false;
       confidence = 90;
     } else if (response.status >= 300 && response.status < 400) {
-      // Redirect – could be a login page or a custom 404 page
-      // We'll check the final URL after redirect
       const finalUrl = response.url;
-      // If the redirect goes to a login or search page, it's likely not a profile
       if (finalUrl.includes('/login') || finalUrl.includes('/search')) {
         found = false;
         confidence = 60;
       } else {
-        // Could be a valid profile (e.g., LinkedIn redirects to profile on mobile? We'll assume not)
         found = false;
         confidence = 40;
       }
     } else {
-      // Other status (500, 403, etc.)
       found = false;
       confidence = 0;
     }
