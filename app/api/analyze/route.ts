@@ -155,7 +155,7 @@ async function evaluateUrl(content: string): Promise<AnalyzeResponse> {
     result = {
       riskLevel: 'Low',
       confidence: 28,
-      reasons: ['No direct match to known scam domains'],
+      reasons: [], // Empty reasons – let IPQS and other signals add their own
       recommendation: 'Still confirm URL legitimacy before sharing sensitive information.',
     };
   }
