@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import LiveStats from '@/components/LiveStats';
 
 export const metadata: Metadata = {
   title: 'Free Scam Checker South Africa — Verify Scams in Seconds (2026)',
@@ -141,6 +142,9 @@ export default function HomePage() {
                 See How It Works
               </Link>
             </div>
+            <div className="max-w-3xl mx-auto mt-6">
+  <LiveStats />
+</div>
 
             {/* Social proof stats - white cards */}
             <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto pt-8 border-t border-slate-200">
