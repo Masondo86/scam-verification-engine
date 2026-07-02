@@ -28,11 +28,10 @@ export default function LiveStats() {
 
   useEffect(() => {
     fetchStats();
-    const interval = setInterval(fetchStats, 60000); // refresh every minute
+    const interval = setInterval(fetchStats, 60000);
     return () => clearInterval(interval);
   }, []);
 
-  // Rotate ticker items every 5 seconds
   useEffect(() => {
     if (!stats?.recentFlaggedDomains?.length) return;
     const timer = setInterval(() => {
@@ -43,41 +42,54 @@ export default function LiveStats() {
 
   if (loading || !stats) {
     return (
-      <div className="animate-pulse flex gap-4 text-sm text-slate-400">
-        <span>Loading stats...</span>
+      <div className="flex gap-4 text-sm text-slate-400">
+        <span>Loading live stats...</span>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-white/5 text-sm text-slate-300">
-      <div className="flex flex-wrap items-center gap-4 md:gap-6">
-        <div>
-          <span className="font-semibold text-indigo-300">{stats.scamsToday}</span>{' '}
-          <span className="text-slate-400">scams detected today</span>
+    <div className="bg-slate-800/70 backdrop-blur-sm rounded-2xl border border-white/10 shadow-xl p-5">
+      <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8">
+        {/* Scams Today */}
+        <div className="text-center">
+          <div className="text-2xl md:text-3xl font-bold text-indigo-300 drop-shadow-[0_0_10px_rgba(99,102,241,0.3)]">
+            {stats.scamsToday}
+          </div>
+          <div className="text-xs text-slate-300 font-medium uppercase tracking-wider">Scams Today</div>
         </div>
-        <div>
-          <span className="font-semibold text-red-300">{stats.highRiskThisWeek}</span>{' '}
-          <span className="text-slate-400">high-risk this week</span>
+
+        {/* High Risk This Week */}
+        <div className="text-center">
+          <div className="text-2xl md:text-3xl font-bold text-red-300 drop-shadow-[0_0_10px_rgba(239,68,68,0.3)]">
+            {stats.highRiskThisWeek}
+          </div>
+          <div className="text-xs text-slate-300 font-medium uppercase tracking-wider">High Risk This Week</div>
         </div>
-        <div>
-          <span className="font-semibold text-purple-300">{stats.totalScans.toLocaleString()}</span>{' '}
-          <span className="text-slate-400">total scans</span>
+
+        {/* Total Scans */}
+        <div className="text-center">
+          <div className="text-2xl md:text-3xl font-bold text-purple-300 drop-shadow-[0_0_10px_rgba(168,85,247,0.3)]">
+            {stats.totalScans.toLocaleString()}
+          </div>
+          <div className="text-xs text-slate-300 font-medium uppercase tracking-wider">Total Scans</div>
         </div>
       </div>
 
-      {/* Ticker for recent flagged domains */}
+      {/* Ticker */}
       {stats.recentFlaggedDomains.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-white/10 overflow-hidden">
-          <div className="flex items-center gap-2">
-            <span className="text-yellow-400 font-medium text-xs uppercase tracking-wider">⚠️ Recent threats</span>
-            <div className="relative h-5 overflow-hidden flex-1">
+        <div className="mt-4 pt-4 border-t border-white/10">
+          <div className="flex items-center justify-center gap-2 overflow-hidden">
+            <span className="text-yellow-300 font-semibold text-xs uppercase tracking-wider flex-shrink-0">
+              ⚠️ Recent Threats
+            </span>
+            <div className="relative h-6 overflow-hidden flex-1 max-w-xs">
               <div
                 className="transition-all duration-700 ease-in-out"
                 style={{ transform: `translateY(-${tickerIndex * 100}%)` }}
               >
                 {stats.recentFlaggedDomains.map((domain, idx) => (
-                  <div key={idx} className="h-5 flex items-center text-amber-300 font-mono text-sm">
+                  <div key={idx} className="h-6 flex items-center justify-center text-amber-200 font-mono text-sm truncate">
                     {domain}
                   </div>
                 ))}
