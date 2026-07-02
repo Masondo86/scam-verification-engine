@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import LiveStats from '@/components/LiveStats';
 import type { AnalyzeResponse, ScanType } from '@/app/lib/types';
 
 // Example queries for the "Try an example" feature
@@ -190,7 +191,12 @@ export default function Page() {
           <p className="text-slate-500 text-sm mt-1">Powered by The Link Digital Security</p>
         </header>
 
-        {/* INPUT SECTION - Matches screenshot exactly */}
+        {/* LIVESTATS - NEW! */}
+        <div className="max-w-3xl mx-auto mb-6">
+          <LiveStats />
+        </div>
+
+        {/* INPUT SECTION */}
         <section className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-white/10 shadow-xl">
           <p className="text-slate-300 text-sm mb-4 text-center">
             Paste a phone number, link, email, or suspicious message below. Get a free risk score in seconds — no signup required.
