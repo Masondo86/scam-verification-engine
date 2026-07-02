@@ -2,6 +2,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import Script from 'next/script';
+import NavigationHub from '@/components/NavigationHub';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://checkascam.co.za'),
@@ -38,6 +39,7 @@ export default function RootLayout({
     <html lang="en-ZA">
       <body>
         {children}
+        <NavigationHub />
         <Script
           id="schema-organization"
           type="application/ld+json"
@@ -47,7 +49,12 @@ export default function RootLayout({
               "@type": "Organization",
               "name": "Free Scam Lookup Tool",
               "url": "https://checkascam.co.za",
-              // Logo temporarily removed
+              "logo": "https://checkascam.co.za/logo.png",
+              "sameAs": [
+                // Optional: add your social media profiles if you have them
+                // "https://twitter.com/yourhandle",
+                // "https://facebook.com/yourpage"
+              ]
             })
           }}
         />
