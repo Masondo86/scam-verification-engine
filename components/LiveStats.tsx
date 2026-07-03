@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface Stats {
   scamsToday: number;
@@ -14,9 +14,10 @@ export default function LiveStats() {
   const [loading, setLoading] = useState(true);
   const [tickerIndex, setTickerIndex] = useState(0);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
-      const res = await fetch('/api/stats/public');
+      // ✅ Cache-busting parameter
+      const res = await fetch(`/api/stats/public?t=${Date.now()}`);
       const data = await res.json();
       setStats(data);
     } catch (err) {
@@ -24,13 +25,13 @@ export default function LiveStats() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchStats();
     const interval = setInterval(fetchStats, 60000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchStats]);
 
   // Rotate ticker every 5 seconds
   useEffect(() => {
@@ -40,6 +41,17 @@ export default function LiveStats() {
     }, 5000);
     return () => clearInterval(timer);
   }, [stats]);
+
+  // Refetch when tab becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchStats();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [fetchStats]);
 
   if (loading || !stats) {
     return (
@@ -55,7 +67,7 @@ export default function LiveStats() {
     : null;
 
   return (
-    <div className="bg-slate-800/70 backdrop-blur-sm rounded-2xl border border-white/10 shadow-xl p-5">
+    <div className="bg-slate-800/90 backdrop-blur-sm rounded-2xl border border-white/10 shadow-xl p-5">
       <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8">
         <div className="text-center">
           <div className="text-2xl md:text-3xl font-bold text-indigo-300 drop-shadow-[0_0_10px_rgba(99,102,241,0.3)]">
