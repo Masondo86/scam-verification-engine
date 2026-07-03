@@ -123,11 +123,14 @@ function evaluateMessage(content: string): AnalyzeResponse {
 async function evaluateUrl(content: string): Promise<AnalyzeResponse> {
   const lower = content.toLowerCase();
 
+  console.log(`[ANALYZE-URL] Processing URL: ${content}`);
+
   const knownDomain = knownScams.find((scam) =>
     scam.domains.some((domain) => lower.includes(domain.toLowerCase()))
   );
 
   if (knownDomain) {
+    console.log(`[ANALYZE-URL] ✓ Matched known scam: ${knownDomain.name}`);
     return {
       riskLevel: 'High',
       confidence: 90,
@@ -163,29 +166,47 @@ async function evaluateUrl(content: string): Promise<AnalyzeResponse> {
   }
 
   // 🔍 IPQS URL Reputation (primary - kept for URL only)
+  // NOTE: IPQS reputation can change over time. We do NOT cache URL reputation to avoid stale results.
+  // Each scan should reflect the current threat status from IPQS.
   if (result.riskLevel !== 'High') {
-    console.log(`[IPQS-URL] Checking URL: ${content}`);
+    console.log(`[ANALYZE-URL] Querying IPQS for: ${content}`);
     const ipqsData = await getIPQSURLReputation(content);
 
     if (!ipqsData) {
-      console.warn(`[IPQS-URL] No data returned for URL: ${content}`);
+      console.warn(`[ANALYZE-URL] IPQS returned null for: ${content}`);
     } else {
+      console.log(`[ANALYZE-URL] IPQS response:`, {
+        riskScore: ipqsData.riskScore,
+        reasons: ipqsData.reasons,
+        raw: ipqsData.raw
+      });
+      
       result.reasons.push(...ipqsData.reasons);
 
       if (ipqsData.riskScore >= 85) {
         result.confidence = Math.max(result.confidence, 90);
         result.riskLevel = 'High';
+        console.log(`[ANALYZE-URL] Risk elevated to High (score: ${ipqsData.riskScore})`);
       } else if (ipqsData.riskScore >= 60) {
         result.confidence = Math.max(result.confidence, 75);
         result.riskLevel = 'High';
+        console.log(`[ANALYZE-URL] Risk elevated to High (score: ${ipqsData.riskScore})`);
       } else if (ipqsData.riskScore >= 30) {
         result.confidence = Math.max(result.confidence, 50);
         if (result.riskLevel === 'Low') result.riskLevel = 'Medium';
+        console.log(`[ANALYZE-URL] Risk adjusted to Medium (score: ${ipqsData.riskScore})`);
       } else {
         result.confidence = Math.min(result.confidence + ipqsData.riskScore, 100);
+        console.log(`[ANALYZE-URL] Risk remains Low (score: ${ipqsData.riskScore})`);
       }
     }
   }
+
+  console.log(`[ANALYZE-URL] Final result:`, {
+    url: content,
+    riskLevel: result.riskLevel,
+    confidence: result.confidence
+  });
 
   return result;
 }
@@ -332,6 +353,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unsupported type' }, { status: 400 });
     }
 
+    // [DEBUG] Log incoming scan request
+    console.log(`[ANALYZE] Scan requested - type: ${type}, content length: ${content.length}`);
+
     // Run analysis
     let result: AnalyzeResponse;
     if (type === 'message') result = evaluateMessage(content);
@@ -345,6 +369,9 @@ export async function POST(req: Request) {
       const spamCount = await getSpamReportCount(type, content);
       result = { ...result, spamReportCount: spamCount };
     }
+
+    // [DEBUG] Log analysis result
+    console.log(`[ANALYZE] Result - type: ${type}, riskLevel: ${result.riskLevel}, confidence: ${result.confidence}`);
 
     // ---------- TRUST SIGNAL ENGINE INTEGRATION ----------
     try {
@@ -444,7 +471,11 @@ export async function POST(req: Request) {
         ip_hash: ipHash,
         created_at: new Date(),
       });
-      if (insertError) console.error('Failed to log scan:', insertError);
+      if (insertError) {
+        console.error('[ANALYZE] Failed to log scan:', insertError);
+      } else {
+        console.log(`[ANALYZE] Scan logged - type: ${type}, verdict: ${result.riskLevel}`);
+      }
 
       const upsertIndicator = async (type: string, value: string) => {
         const { data, error } = await supabase
@@ -487,7 +518,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error(error);
+    console.error('[ANALYZE] Server error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
