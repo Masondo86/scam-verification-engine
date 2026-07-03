@@ -35,6 +35,9 @@ export async function getIPQSURLReputation(url: string): Promise<IPQSURLResult |
     }
 
     const data = await response.json();
+    
+    // [DEBUG] Log raw IPQS response
+    console.log(`[IPQS-URL] Raw API response for ${url}:`, JSON.stringify(data, null, 2));
 
     let riskScore = data.risk_score ?? data.fraud_score ?? 0;
     riskScore = Math.min(100, Math.max(0, riskScore));
@@ -54,6 +57,15 @@ export async function getIPQSURLReputation(url: string): Promise<IPQSURLResult |
     if (data.risk_score === 100) reasons.push('Confirmed malicious – do NOT proceed');
 
     const result = { success: true, riskScore, reasons, raw: data };
+    
+    // [DEBUG] Log processed result
+    console.log(`[IPQS-URL] Processed result:`, {
+      url,
+      riskScore,
+      reasons,
+      cacheKey
+    });
+    
     setCached(cacheKey, result, 86400);
     return result;
   } catch (err) {
