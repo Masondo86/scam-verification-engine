@@ -32,6 +32,7 @@ export default function LiveStats() {
     return () => clearInterval(interval);
   }, []);
 
+  // Rotate ticker every 5 seconds
   useEffect(() => {
     if (!stats?.recentFlaggedDomains?.length) return;
     const timer = setInterval(() => {
@@ -48,10 +49,14 @@ export default function LiveStats() {
     );
   }
 
+  // Get current ticker item
+  const currentDomain = stats.recentFlaggedDomains.length > 0
+    ? stats.recentFlaggedDomains[tickerIndex % stats.recentFlaggedDomains.length]
+    : null;
+
   return (
     <div className="bg-slate-800/70 backdrop-blur-sm rounded-2xl border border-white/10 shadow-xl p-5">
       <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8">
-        {/* Scams Today */}
         <div className="text-center">
           <div className="text-2xl md:text-3xl font-bold text-indigo-300 drop-shadow-[0_0_10px_rgba(99,102,241,0.3)]">
             {stats.scamsToday}
@@ -59,7 +64,6 @@ export default function LiveStats() {
           <div className="text-xs text-slate-300 font-medium uppercase tracking-wider">Scams Today</div>
         </div>
 
-        {/* High Risk This Week */}
         <div className="text-center">
           <div className="text-2xl md:text-3xl font-bold text-red-300 drop-shadow-[0_0_10px_rgba(239,68,68,0.3)]">
             {stats.highRiskThisWeek}
@@ -67,7 +71,6 @@ export default function LiveStats() {
           <div className="text-xs text-slate-300 font-medium uppercase tracking-wider">High Risk This Week</div>
         </div>
 
-        {/* Total Scans */}
         <div className="text-center">
           <div className="text-2xl md:text-3xl font-bold text-purple-300 drop-shadow-[0_0_10px_rgba(168,85,247,0.3)]">
             {stats.totalScans.toLocaleString()}
@@ -76,25 +79,16 @@ export default function LiveStats() {
         </div>
       </div>
 
-      {/* Ticker */}
-      {stats.recentFlaggedDomains.length > 0 && (
+      {/* Ticker - only show if we have domains */}
+      {currentDomain && (
         <div className="mt-4 pt-4 border-t border-white/10">
-          <div className="flex items-center justify-center gap-2 overflow-hidden">
+          <div className="flex items-center justify-center gap-2">
             <span className="text-yellow-300 font-semibold text-xs uppercase tracking-wider flex-shrink-0">
-              ⚠️ Recent Threats
+              ⚠️ Recent Threat
             </span>
-            <div className="relative h-6 overflow-hidden flex-1 max-w-xs">
-              <div
-                className="transition-all duration-700 ease-in-out"
-                style={{ transform: `translateY(-${tickerIndex * 100}%)` }}
-              >
-                {stats.recentFlaggedDomains.map((domain, idx) => (
-                  <div key={idx} className="h-6 flex items-center justify-center text-amber-200 font-mono text-sm truncate">
-                    {domain}
-                  </div>
-                ))}
-              </div>
-            </div>
+            <span className="text-amber-200 font-mono text-sm truncate max-w-[200px]">
+              {currentDomain}
+            </span>
           </div>
         </div>
       )}
