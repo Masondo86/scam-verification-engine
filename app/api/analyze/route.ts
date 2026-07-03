@@ -1,6 +1,6 @@
 // app/api/analyze/route.ts
-import { getIPQSPhoneReputation } from '@/app/services/ipqsPhone';
-import { getIPQSEmailReputation } from '@/app/services/ipqsEmail';
+import { getSEONPhoneReputation } from '@/app/services/seonPhone';
+import { getSEONEmailReputation } from '@/app/services/seonEmail';
 import { getIPQSURLReputation } from '@/app/services/ipqsUrl';
 import { checkPresence } from '@/app/services/trust-signals/presence';
 import { fetchNews } from '@/app/services/trust-signals/news';
@@ -127,7 +127,6 @@ async function evaluateUrl(content: string): Promise<AnalyzeResponse> {
     scam.domains.some((domain) => lower.includes(domain.toLowerCase()))
   );
 
-  // If a known scam is matched, return High immediately
   if (knownDomain) {
     return {
       riskLevel: 'High',
@@ -155,22 +154,21 @@ async function evaluateUrl(content: string): Promise<AnalyzeResponse> {
       recommendation: 'Avoid entering credentials. Verify the official domain first.',
     };
   } else {
-    // Low risk – no "No direct match" message; let IPQS and other signals add reasons
     result = {
       riskLevel: 'Low',
       confidence: 28,
-      reasons: [], // will be populated by IPQS and trust signals
+      reasons: [],
       recommendation: 'Still confirm URL legitimacy before sharing sensitive information.',
     };
   }
 
-  // 🔍 IPQS URL Reputation (only if not already High)
+  // 🔍 IPQS URL Reputation (primary - kept for URL only)
   if (result.riskLevel !== 'High') {
-    console.log(`[IPQS] Checking URL: ${content}`);
+    console.log(`[IPQS-URL] Checking URL: ${content}`);
     const ipqsData = await getIPQSURLReputation(content);
 
     if (!ipqsData) {
-      console.warn(`[IPQS] No data returned for URL: ${content}`);
+      console.warn(`[IPQS-URL] No data returned for URL: ${content}`);
     } else {
       result.reasons.push(...ipqsData.reasons);
 
@@ -212,25 +210,26 @@ async function evaluatePhone(content: string): Promise<AnalyzeResponse> {
     };
   }
 
-  console.log(`[IPQS] Checking phone: ${phone}`);
-  const ipqsData = await getIPQSPhoneReputation(phone);
+  // 🔍 SEON Phone Reputation (replaces IPQS)
+  console.log(`[SEON-PHONE] Checking phone: ${phone}`);
+  const seonData = await getSEONPhoneReputation(phone);
 
-  if (!ipqsData) {
-    console.warn(`[IPQS] No data returned for phone: ${phone}`);
+  if (!seonData) {
+    console.warn(`[SEON-PHONE] No data returned for phone: ${phone}`);
   } else {
-    result.reasons.push(...ipqsData.reasons);
+    result.reasons.push(...seonData.reasons);
 
-    if (ipqsData.riskScore >= 85) {
+    if (seonData.riskScore >= 85) {
       result.confidence = Math.max(result.confidence, 90);
       result.riskLevel = 'High';
-    } else if (ipqsData.riskScore >= 60) {
+    } else if (seonData.riskScore >= 60) {
       result.confidence = Math.max(result.confidence, 75);
       result.riskLevel = 'High';
-    } else if (ipqsData.riskScore >= 30) {
+    } else if (seonData.riskScore >= 30) {
       result.confidence = Math.max(result.confidence, 50);
       if (result.riskLevel === 'Low') result.riskLevel = 'Medium';
     } else {
-      result.confidence = Math.min(result.confidence + ipqsData.riskScore, 100);
+      result.confidence = Math.min(result.confidence + seonData.riskScore, 100);
     }
   }
 
@@ -245,25 +244,26 @@ async function evaluateEmail(content: string): Promise<AnalyzeResponse> {
     recommendation: 'Proceed with caution. Verify sender independently.',
   };
 
-  console.log(`[IPQS] Checking email: ${content}`);
-  const ipqsData = await getIPQSEmailReputation(content);
+  // 🔍 SEON Email Reputation (replaces IPQS)
+  console.log(`[SEON-EMAIL] Checking email: ${content}`);
+  const seonData = await getSEONEmailReputation(content);
 
-  if (!ipqsData) {
-    console.warn(`[IPQS] No data returned for email: ${content}`);
+  if (!seonData) {
+    console.warn(`[SEON-EMAIL] No data returned for email: ${content}`);
   } else {
-    result.reasons.push(...ipqsData.reasons);
+    result.reasons.push(...seonData.reasons);
 
-    if (ipqsData.fraudScore >= 85) {
+    if (seonData.fraudScore >= 85) {
       result.confidence = Math.max(result.confidence, 90);
       result.riskLevel = 'High';
-    } else if (ipqsData.fraudScore >= 60) {
+    } else if (seonData.fraudScore >= 60) {
       result.confidence = Math.max(result.confidence, 75);
       result.riskLevel = 'High';
-    } else if (ipqsData.fraudScore >= 30) {
+    } else if (seonData.fraudScore >= 30) {
       result.confidence = Math.max(result.confidence, 50);
       if (result.riskLevel === 'Low') result.riskLevel = 'Medium';
     } else {
-      result.confidence = Math.min(result.confidence + ipqsData.fraudScore, 100);
+      result.confidence = Math.min(result.confidence + seonData.fraudScore, 100);
     }
   }
 
@@ -347,7 +347,6 @@ export async function POST(req: Request) {
     }
 
     // ---------- TRUST SIGNAL ENGINE INTEGRATION ----------
-    // Only for email and URL scans (for now)
     try {
       if (type === 'email') {
         const username = content.split('@')[0];
@@ -357,7 +356,6 @@ export async function POST(req: Request) {
         const presence = await checkPresence(username);
         if (presence.foundCount > 0) {
           result.reasons.push(`Found ${presence.foundCount} public profiles (e.g., GitHub, LinkedIn, etc.)`);
-          // Small confidence boost
           result.confidence = Math.min(result.confidence + 5, 100);
         }
 
@@ -389,7 +387,6 @@ export async function POST(req: Request) {
           }
         }
       } else if (type === 'url') {
-        // Extract domain from URL
         let domain = content;
         try {
           const urlObj = new URL(content);
@@ -398,7 +395,6 @@ export async function POST(req: Request) {
           // use as is
         }
 
-        // News check
         const news = await fetchNews(domain);
         if (news.negativeCount > 0) {
           result.reasons.push(`Found ${news.negativeCount} negative news mentions for domain ${domain}`);
@@ -408,7 +404,6 @@ export async function POST(req: Request) {
           else if (result.confidence >= 40) result.riskLevel = 'Medium';
         }
 
-        // Search fallback if news returned 0 results
         if (news.total === 0) {
           const searchResults = await searchWeb(domain);
           if (searchResults.length > 0) {
@@ -425,7 +420,6 @@ export async function POST(req: Request) {
       }
     } catch (err) {
       console.error('[Trust Signal] Integration error:', err);
-      // Do not fail the scan; just log the error
     }
     // ---------- END TRUST SIGNAL INTEGRATION ----------
 
