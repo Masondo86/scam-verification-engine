@@ -9,15 +9,18 @@ export async function GET() {
     process.env.SUPABASE_ANON_KEY!
   );
 
+  // Use South Africa timezone
   const now = new Date();
-  // Start of today in UTC (Supabase stores timestamps in UTC)
-  const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  const weekStart = new Date(now);
-  weekStart.setUTCDate(weekStart.getUTCDate() - 7);
-  weekStart.setUTCHours(0, 0, 0, 0);
+  const saTime = new Date(now.toLocaleString('en-US', { timeZone: 'Africa/Johannesburg' }));
+  const todayStart = new Date(saTime);
+  todayStart.setHours(0, 0, 0, 0);
 
-  console.log('[Stats] Today start (UTC):', todayStart.toISOString());
-  console.log('[Stats] Week start (UTC):', weekStart.toISOString());
+  const weekStart = new Date(saTime);
+  weekStart.setDate(weekStart.getDate() - 7);
+  weekStart.setHours(0, 0, 0, 0);
+
+  console.log('[Stats] Today start (SAST):', todayStart.toISOString());
+  console.log('[Stats] Week start (SAST):', weekStart.toISOString());
 
   // Count scans today
   const { count: scamsToday, error: err1 } = await supabase
@@ -36,7 +39,7 @@ export async function GET() {
 
   if (err2) console.error('[Stats] Error counting high-risk:', err2);
 
-  // Total scans (capped at 999+ for display)
+  // Total scans
   const { count: totalScans, error: err3 } = await supabase
     .from('scan_events')
     .select('*', { count: 'exact', head: true });
@@ -57,20 +60,16 @@ export async function GET() {
   // Extract domains from input_text
   const domains = recentHighRisk
     ?.map(row => {
-      const text = row.input_text;
-      // Try to extract domain from URL
+      const text = row.input_text || '';
       const urlMatch = text.match(/(?:https?:\/\/)?(?:www\.)?([a-z0-9-]+\.[a-z]{2,}(?:\.[a-z]{2,})?)/i);
       if (urlMatch) {
-        // Remove trailing path, query, etc.
         return urlMatch[1].split('/')[0].split('?')[0];
       }
-      // If no URL, try to find a domain-like pattern (e.g., "example.com")
       const domainMatch = text.match(/\b([a-z0-9-]+\.[a-z]{2,}(?:\.[a-z]{2,})?)\b/i);
       return domainMatch ? domainMatch[1] : null;
     })
     .filter(Boolean) as string[];
 
-  // Remove duplicates, keep first 5
   const recentFlaggedDomains = [...new Set(domains)].slice(0, 5);
 
   const response = {
@@ -80,7 +79,13 @@ export async function GET() {
     recentFlaggedDomains,
   };
 
-  console.log('[Stats] Response:', response);
+  console.log('[Stats] Response:', JSON.stringify(response, null, 2));
 
-  return NextResponse.json(response);
+  return NextResponse.json(response, {
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    },
+  });
 }
