@@ -21,9 +21,34 @@ type AnalyzeResponse = {
   spamReportCount?: number;
 };
 
-const MESSAGE_FLAGS = ['urgent', 'payment', 'verify', 'suspend', 'otp'];
+const MESSAGE_FLAGS = [
+  // Urgency & pressure
+  'urgent', 'immediately', 'asap', 'now', 'action required', 'within 24 hours',
+  'today', 'as soon as possible', 'do not delay', 'time sensitive',
+  // Fear & threats
+  'suspended', 'locked', 'closed', 'terminated', 'compromised', 'unauthorized',
+  'deactivated', 'restricted', 'pending closure', 'will be lost',
+  // Authority impersonation
+  'bank', 'sars', 'government', 'official', 'department', 'unit', 'agency',
+  'inspection', 'fraud department', 'security team', 'head officer', 'executive',
+  'commissioner', 'director', 'compliance', 'regulatory', 'authority',
+  // Consignment / parcel / shipping
+  'consignment', 'parcel', 'courier', 'delivery', 'unclaimed', 'package',
+  'shipping', 'cargo', 'freight', 'tracking number', 'shipment',
+  // Personal info requests
+  'full name', 'address', 'phone number', 'email address', 'confirm your',
+  'verify your account', 'update your details', 'provide your',
+  'send your', 'reply with', 'confirm your identity',
+  // Financial triggers
+  'million', 'cash', 'wire transfer', 'bank account', 'inheritance', 'lottery',
+  'prize', 'winnings', 'refund', 'tax refund', 'beneficiary', 'next of kin',
+  'compensation', 'payout', 'reward', 'grant', 'relief fund',
+  // Generic scam phrases
+  'unexpected', 'windfall', 'guaranteed', 'risk-free', 'no risk',
+  'opportunity', 'investment', 'profit', 'returns',
+];
 const KNOWN_SCAM_NUMBERS = ['+27721234567', '0721234567', '+27831234567'];
-const SUPPORTED_TYPES: AnalyzeType[] = ['message', 'url', 'phone', 'claim', 'email'];
+const SUPPORTED_TYPES: AnalyzeType[] = ['message', 'url', 'phone', 'claim', 'email','business'];
 
 // --------------------------------------------------------------------
 // Supabase client (uses environment variables)
