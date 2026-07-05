@@ -48,7 +48,7 @@ const MESSAGE_FLAGS = [
   'opportunity', 'investment', 'profit', 'returns',
 ];
 const KNOWN_SCAM_NUMBERS = ['+27721234567', '0721234567', '+27831234567'];
-const SUPPORTED_TYPES: AnalyzeType[] = ['message', 'url', 'phone', 'claim', 'email','business'];
+const SUPPORTED_TYPES: AnalyzeType[] = ['message', 'url', 'phone', 'claim', 'email', 'business'];
 
 // --------------------------------------------------------------------
 // Supabase client (uses environment variables)
