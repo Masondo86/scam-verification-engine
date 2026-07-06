@@ -16,6 +16,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/privacy-policy',
     '/payday-loan-scams',
     '/digital-footprint-hub',
+    '/phone-number-scams',
+    '/help-center',
   ];
 
   return routes.map((route) => ({
