@@ -1,14 +1,15 @@
+
+import crypto from 'crypto';
+import { createClient } from '@supabase/supabase-js';
+import { NextResponse } from 'next/server';
+import { analyzeMessageNLP } from '@/app/lib/nlp-analyze';
+import { knownScams } from '@/app/data/known-scams';
 import { getSEONPhoneReputation } from '@/app/services/seonPhone';
 import { getSEONEmailReputation } from '@/app/services/seonEmail';
 import { getIPQSURLReputation } from '@/app/services/ipqsUrl';
 import { checkPresence } from '@/app/services/trust-signals/presence';
 import { fetchNews } from '@/app/services/trust-signals/news';
 import { searchWeb } from '@/app/services/trust-signals/search';
-import crypto from 'crypto';
-import { createClient } from '@supabase/supabase-js';
-import { analyzeMessageNLP } from '@/app/lib/nlp-analyze';
-import { NextResponse } from 'next/server';
-import { knownScams } from '@/app/data/known-scams';
 
 type AnalyzeType = 'message' | 'url' | 'phone' | 'claim' | 'email' | 'business';
 
@@ -20,6 +21,7 @@ type AnalyzeResponse = {
   spamReportCount?: number;
 };
 
+// ─── Flags and constants ────────────────────────────────────────────────
 const MESSAGE_FLAGS = [
   // Urgency & pressure
   'urgent', 'immediately', 'asap', 'now', 'action required', 'within 24 hours',
@@ -50,16 +52,13 @@ const MESSAGE_FLAGS = [
 const KNOWN_SCAM_NUMBERS = ['+27721234567', '0721234567', '+27831234567'];
 const SUPPORTED_TYPES: AnalyzeType[] = ['message', 'url', 'phone', 'claim', 'email', 'business'];
 
-// --------------------------------------------------------------------
-// Supabase client (uses environment variables)
+// ─── Supabase client ─────────────────────────────────────────────────────
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_ANON_KEY!
 );
-// --------------------------------------------------------------------
 
-// --------------------------------------------------------------------
-// Helper functions
+// ─── Helper functions ──────────────────────────────────────────────────
 function extractUrls(text: string): string[] {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   return text.match(urlRegex) || [];
@@ -77,7 +76,6 @@ function detectSector(text: string): string | null {
   if (/(sars|tax refund)/i.test(lower)) return 'government';
   return null;
 }
-// --------------------------------------------------------------------
 
 function normalizePhone(value: string) {
   return value.replace(/\s+/g, '').trim();
@@ -100,6 +98,68 @@ async function getSpamReportCount(type: string, content: string): Promise<number
   return count || 0;
 }
 
+// ─── FSCA & NCR registration checks (inline) ──────────────────────────
+async function checkFSCARegistration(businessName: string): Promise<{ registered: boolean; details?: string }> {
+  try {
+    const searchUrl = `https://www.fsca.co.za/Search/FSP?query=${encodeURIComponent(businessName)}`;
+    const response = await fetch(searchUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TheLinkDigital/1.0)' },
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (!response.ok) {
+      console.warn(`[FSCA] Search failed: ${response.status}`);
+      return { registered: false };
+    }
+
+    const html = await response.text();
+    const hasResults = html.includes('Results found for') || html.includes('FSP Number');
+    if (hasResults) {
+      const fspMatch = html.match(/FSP Number[:\s]*([A-Z0-9]+)/i);
+      const nameMatch = html.match(/Name[:\s]*([^<]+)/i);
+      return {
+        registered: true,
+        details: `FSP ${fspMatch?.[1] || ''} - ${nameMatch?.[1]?.trim() || businessName}`,
+      };
+    }
+
+    return { registered: false };
+  } catch (err) {
+    console.error('[FSCA] Error:', err);
+    return { registered: false };
+  }
+}
+
+async function checkNCRRegistration(businessName: string): Promise<{ registered: boolean; details?: string }> {
+  try {
+    const searchUrl = `https://www.ncr.org.za/registrants?keyword=${encodeURIComponent(businessName)}`;
+    const response = await fetch(searchUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TheLinkDigital/1.0)' },
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (!response.ok) {
+      console.warn(`[NCR] Search failed: ${response.status}`);
+      return { registered: false };
+    }
+
+    const html = await response.text();
+    const ncrMatch = html.match(/NCRCP\d+/i);
+    if (ncrMatch) {
+      return {
+        registered: true,
+        details: `NCRCP ${ncrMatch[0]}`,
+      };
+    }
+
+    return { registered: false };
+  } catch (err) {
+    console.error('[NCR] Error:', err);
+    return { registered: false };
+  }
+}
+
+// ─── Evaluation functions ─────────────────────────────────────────────
 function evaluateMessage(content: string): AnalyzeResponse {
   const lower = content.toLowerCase();
   const matchedFlags = MESSAGE_FLAGS.filter((flag) => lower.includes(flag));
@@ -133,7 +193,6 @@ function evaluateMessage(content: string): AnalyzeResponse {
     };
   }
 
-  // NLP Enhancement
   const nlpAnalysis = analyzeMessageNLP(content);
   if (nlpAnalysis.riskBoost > 0) {
     result.reasons.push(...nlpAnalysis.reasons);
@@ -187,7 +246,6 @@ async function evaluateUrl(content: string): Promise<AnalyzeResponse> {
     };
   }
 
-  // 🔍 IPQS URL Reputation (primary - kept for URL only)
   if (result.riskLevel !== 'High') {
     console.log(`[IPQS-URL] Checking URL: ${content}`);
     const ipqsData = await getIPQSURLReputation(content);
@@ -235,7 +293,6 @@ async function evaluatePhone(content: string): Promise<AnalyzeResponse> {
     };
   }
 
-  // 🔍 SEON Phone Reputation
   console.log(`[SEON-PHONE] Checking phone: ${phone}`);
   const seonData = await getSEONPhoneReputation(phone);
 
@@ -269,7 +326,6 @@ async function evaluateEmail(content: string): Promise<AnalyzeResponse> {
     recommendation: 'Proceed with caution. Verify sender independently.',
   };
 
-  // 🔍 SEON Email Reputation
   console.log(`[SEON-EMAIL] Checking email: ${content}`);
   const seonData = await getSEONEmailReputation(content);
 
@@ -308,35 +364,65 @@ async function evaluateBusiness(content: string): Promise<AnalyzeResponse> {
   let isRegistered = false;
 
   // 1. Check FSCA registration
-  const fsca = await checkFSCARegistration(content);
-  if (fsca.registered) {
-    isRegistered = true;
-    result.reasons.push(`✅ FSCA registered: ${fsca.details}`);
-    result.confidence = Math.min(result.confidence + 20, 100);
-  } else {
-    result.reasons.push('❌ Not found on FSCA register. Financial services require FSCA registration.');
-    trustPenalty += 20;
+  try {
+    const fsca = await checkFSCARegistration(content);
+    if (fsca.registered) {
+      isRegistered = true;
+      result.reasons.push(`✅ FSCA registered: ${fsca.details}`);
+      result.confidence = Math.min(result.confidence + 20, 100);
+    } else {
+      result.reasons.push('❌ Not found on FSCA register. Financial services require FSCA registration.');
+      trustPenalty += 20;
+    }
+  } catch (err) {
+    console.warn('[FSCA] Check failed:', err);
+    result.reasons.push('⚠️ FSCA registration check unavailable (service error).');
   }
 
   // 2. Check NCR registration
-  const ncr = await checkNCRRegistration(content);
-  if (ncr.registered) {
-    isRegistered = true;
-    result.reasons.push(`✅ NCR registered: ${ncr.details}`);
-    result.confidence = Math.min(result.confidence + 15, 100);
-  } else {
-    result.reasons.push('❌ Not found on NCR register. Credit providers require NCR registration.');
-    trustPenalty += 15;
+  try {
+    const ncr = await checkNCRRegistration(content);
+    if (ncr.registered) {
+      isRegistered = true;
+      result.reasons.push(`✅ NCR registered: ${ncr.details}`);
+      result.confidence = Math.min(result.confidence + 15, 100);
+    } else {
+      result.reasons.push('❌ Not found on NCR register. Credit providers require NCR registration.');
+      trustPenalty += 15;
+    }
+  } catch (err) {
+    console.warn('[NCR] Check failed:', err);
+    result.reasons.push('⚠️ NCR registration check unavailable (service error).');
   }
 
-  // 3. News and search reputation (existing logic)
-  const news = await fetchNews(content);
-  if (news.negativeCount > 0) {
-    negativeReasons.push(`Found ${news.negativeCount} negative news mentions for "${content}"`);
-    trustPenalty += news.negativeCount * 5;
+  // 3. News and search reputation
+  try {
+    const news = await fetchNews(content);
+    if (news.negativeCount > 0) {
+      negativeReasons.push(`Found ${news.negativeCount} negative news mentions for "${content}"`);
+      trustPenalty += news.negativeCount * 5;
+    }
+    if (news.total === 0) {
+      const searchResults = await searchWeb(content);
+      const negative = searchResults.filter(r => r.sentiment === 'negative');
+      if (negative.length > 0) {
+        negativeReasons.push(`Found ${negative.length} negative search results for "${content}"`);
+        trustPenalty += negative.length * 3;
+      }
+    }
+  } catch (err) {
+    console.warn('[Business] News/search failed:', err);
   }
 
-  // ... (rest of the existing logic)
+  // 4. Presence check (optional)
+  try {
+    const presence = await checkPresence(content);
+    if (presence.foundCount > 0) {
+      result.reasons.push(`Found ${presence.foundCount} online profiles for this business`);
+      // small positive boost if presence is found
+      result.confidence = Math.min(result.confidence + 5, 100);
+    }
+  } catch {}
 
   // Apply penalties
   if (negativeReasons.length > 0) {
@@ -344,8 +430,12 @@ async function evaluateBusiness(content: string): Promise<AnalyzeResponse> {
     result.confidence = Math.min(result.confidence + trustPenalty, 100);
     if (result.confidence >= 70) result.riskLevel = 'High';
     else if (result.confidence >= 40) result.riskLevel = 'Medium';
+  } else {
+    result.reasons.push('No significant negative reputation found for this business.');
+    result.confidence = 15;
   }
 
+  // Override if not registered and confidence is low
   if (!isRegistered && result.confidence < 30) {
     result.recommendation = 'This business appears to be operating without required regulatory registration. Do not engage.';
     result.riskLevel = 'High';
@@ -354,7 +444,6 @@ async function evaluateBusiness(content: string): Promise<AnalyzeResponse> {
 
   return result;
 }
-
 
 function evaluateClaim(content: string): AnalyzeResponse {
   const lower = content.toLowerCase();
@@ -404,6 +493,7 @@ function evaluateClaim(content: string): AnalyzeResponse {
   };
 }
 
+// ─── POST handler ──────────────────────────────────────────────────────
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -418,7 +508,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unsupported type' }, { status: 400 });
     }
 
-    // Run analysis
     let result: AnalyzeResponse;
     if (type === 'message') result = evaluateMessage(content);
     else if (type === 'url') result = await evaluateUrl(content);
@@ -427,17 +516,13 @@ export async function POST(req: Request) {
     else if (type === 'business') result = await evaluateBusiness(content);
     else result = evaluateClaim(content);
 
-    // Get spam report count
+    // Spam report count
     if (type === 'message' || type === 'url' || type === 'phone' || type === 'email') {
       const spamCount = await getSpamReportCount(type, content);
       result = { ...result, spamReportCount: spamCount };
     }
 
-    // ---------- TRUST SIGNAL ENGINE INTEGRATION (for email/url) ----------
-    // Already integrated inside evaluateEmail and evaluateUrl – skip duplication.
-    // ---------- END TRUST SIGNAL INTEGRATION ----------
-
-    // ---------- LOG TO SUPABASE & EXTRACT INDICATORS ----------
+    // ─── Log to Supabase ────────────────────────────────────────────────
     const forwardedFor = req.headers.get('x-forwarded-for');
     const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : '';
     const ipHash = crypto.createHash('sha256').update(ip).digest('hex');
