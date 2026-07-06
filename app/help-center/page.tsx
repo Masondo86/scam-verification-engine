@@ -4,11 +4,13 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Help & Resource Center | Scam Assistance & Safety Tips',
-  description: 'Get help if you've been scammed. Report to banks, telecoms, SAPS, SAFPS, and find online safety tips. Free resources for South Africans.',
+  description:
+    "Get help if you've been scammed. Report to banks, telecoms, SAPS, SAFPS, and find online safety tips. Free resources for South Africans.",
   keywords: 'help center, report scam, bank fraud, sim swap, online safety, scam assistance',
   openGraph: {
     title: 'Help & Resource Center | The Link Digital Security',
-    description: 'Find official contacts for banks, telecoms, SAPS, and social media safety tips. Report fraud and protect yourself.',
+    description:
+      "Find official contacts for banks, telecoms, SAPS, and social media safety tips. Report fraud and protect yourself.",
     url: 'https://checkascam.co.za/help-center',
     type: 'website',
   },
