@@ -1,7 +1,8 @@
+
 // app/services/ncr.ts
+
 export async function checkNCRRegistration(businessName: string): Promise<{ registered: boolean; details?: string }> {
   try {
-    // NCR registrant search endpoint
     const searchUrl = `https://www.ncr.org.za/registrants?keyword=${encodeURIComponent(businessName)}`;
     const response = await fetch(searchUrl, {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TheLinkDigital/1.0)' },
@@ -14,12 +15,11 @@ export async function checkNCRRegistration(businessName: string): Promise<{ regi
     }
 
     const html = await response.text();
-    // Look for NCR registration number
     const ncrMatch = html.match(/NCRCP\d+/i);
     if (ncrMatch) {
       return {
         registered: true,
-        details: `${businessName} - NCRCP ${ncrMatch[0]}`,
+        details: `NCRCP ${ncrMatch[0]}`,
       };
     }
 
