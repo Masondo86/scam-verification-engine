@@ -1,7 +1,26 @@
+
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
+
+// South Africa Standard Time is UTC+2 year-round (no DST).
+// This builds an ISO timestamp with an explicit "+02:00" offset so the
+// result is correct regardless of what timezone the server itself runs in.
+function getSASTMidnightUTC(date: Date = new Date()): Date {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Johannesburg',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date);
+
+  const y = parts.find((p) => p.type === 'year')!.value;
+  const m = parts.find((p) => p.type === 'month')!.value;
+  const d = parts.find((p) => p.type === 'day')!.value;
+
+  return new Date(`${y}-${m}-${d}T00:00:00+02:00`);
+}
 
 export async function GET() {
   const supabase = createClient(
@@ -9,15 +28,11 @@ export async function GET() {
     process.env.SUPABASE_ANON_KEY!
   );
 
-  // Use South Africa timezone
-  const now = new Date();
-  const saTime = new Date(now.toLocaleString('en-US', { timeZone: 'Africa/Johannesburg' }));
-  const todayStart = new Date(saTime);
-  todayStart.setHours(0, 0, 0, 0);
+  // Correct SAST-based day/week boundaries (see getSASTMidnightUTC above)
+  const todayStart = getSASTMidnightUTC();
 
-  const weekStart = new Date(saTime);
-  weekStart.setDate(weekStart.getDate() - 7);
-  weekStart.setHours(0, 0, 0, 0);
+  const weekStart = new Date(todayStart);
+  weekStart.setUTCDate(weekStart.getUTCDate() - 7);
 
   console.log('[Stats] Today start (SAST):', todayStart.toISOString());
   console.log('[Stats] Week start (SAST):', weekStart.toISOString());
@@ -59,7 +74,7 @@ export async function GET() {
 
   // Extract domains from input_text
   const domains = recentHighRisk
-    ?.map(row => {
+    ?.map((row) => {
       const text = row.input_text || '';
       const urlMatch = text.match(/(?:https?:\/\/)?(?:www\.)?([a-z0-9-]+\.[a-z]{2,}(?:\.[a-z]{2,})?)/i);
       if (urlMatch) {
