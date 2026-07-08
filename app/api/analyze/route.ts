@@ -10,6 +10,7 @@ import { getIPQSURLReputation } from '@/app/services/ipqsUrl';
 import { checkPresence } from '@/app/services/trust-signals/presence';
 import { fetchNews } from '@/app/services/trust-signals/news';
 import { searchWeb } from '@/app/services/trust-signals/search';
+import { classifyScam } from '@/app/lib/scam-classifier';
 
 type AnalyzeType = 'message' | 'url' | 'phone' | 'claim' | 'email' | 'business';
 
@@ -419,7 +420,6 @@ async function evaluateBusiness(content: string): Promise<AnalyzeResponse> {
     const presence = await checkPresence(content);
     if (presence.foundCount > 0) {
       result.reasons.push(`Found ${presence.foundCount} online profiles for this business`);
-      // small positive boost if presence is found
       result.confidence = Math.min(result.confidence + 5, 100);
     }
   } catch {}
@@ -531,6 +531,9 @@ export async function POST(req: Request) {
     const phones = extractPhones(content);
     const sector = detectSector(content);
 
+    // ✅ Classify the scam category BEFORE inserting
+    const category = classifyScam(content);
+
     void (async () => {
       const { error: insertError } = await supabase.from('scan_events').insert({
         input_text: content,
@@ -541,6 +544,7 @@ export async function POST(req: Request) {
         matched_patterns: result.reasons,
         sector: sector,
         ip_hash: ipHash,
+        scam_category: category, // ✅ NEW FIELD
         created_at: new Date(),
       });
       if (insertError) console.error('Failed to log scan:', insertError);
