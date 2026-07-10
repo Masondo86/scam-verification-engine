@@ -17,17 +17,17 @@ export default function PaydayLoanScamsPage() {
         <div className="bg-white rounded-2xl shadow-md p-6 text-center border border-slate-100">
           <div className="text-3xl font-bold text-red-600">45%</div>
           <div className="text-slate-600 text-sm">Increase in payday loan scams (2025)</div>
-          <div className="text-xs text-slate-400 mt-2">Source: SAFPS</div>
+          <div className="text-xs text-slate-500 mt-2">Source: SAFPS</div>
         </div>
         <div className="bg-white rounded-2xl shadow-md p-6 text-center border border-slate-100">
           <div className="text-3xl font-bold text-yellow-600">10,694</div>
           <div className="text-slate-600 text-sm">Lapsed / cancelled NCR registrations</div>
-          <div className="text-xs text-slate-400 mt-2">Source: NCR</div>
+          <div className="text-xs text-slate-500 mt-2">Source: NCR</div>
         </div>
         <div className="bg-white rounded-2xl shadow-md p-6 text-center border border-slate-100">
           <div className="text-3xl font-bold text-purple-600">R2,000+</div>
           <div className="text-slate-600 text-sm">Average loss per victim to loan scams</div>
-          <div className="text-xs text-slate-400 mt-2">Source: SAFPS</div>
+          <div className="text-xs text-slate-500 mt-2">Source: SAFPS</div>
         </div>
       </div>
 
@@ -35,7 +35,7 @@ export default function PaydayLoanScamsPage() {
       <div className="mb-12 text-center bg-indigo-50 rounded-xl p-6 border border-indigo-100">
         <h2 className="text-2xl font-bold text-indigo-800 mb-3">Verify a Suspicious Loan Offer</h2>
         <p className="text-slate-600 mb-4">Paste the SMS, WhatsApp message, website URL, or phone number – free & instant.</p>
-        <Link href="/scan" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-semibold text-white shadow-md hover:shadow-lg transition-shadow">
+        <Link href="/scan" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-semibold text-white shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all hover:scale-105">
           🔍 Open Scam Detector
         </Link>
       </div>
@@ -45,15 +45,15 @@ export default function PaydayLoanScamsPage() {
       <div className="space-y-4 mb-8">
         <div className="flex items-start gap-3">
           <span className="text-green-600 font-bold text-xl">1.</span>
-          <div><strong>Search the NCR Register</strong> – Visit the official <Link href="https://www.ncr.org.za" className="text-indigo-600 underline">NCR Register of Registrants</Link> and search for the lender's name or NCRCP number.</div>
+          <div><strong>Search the NCR Register</strong> – Visit the official <Link href="https://www.ncr.org.za" className="text-indigo-600 underline">NCR Register of Registrants</Link> and search the lender.</div>
         </div>
         <div className="flex items-start gap-3">
           <span className="text-green-600 font-bold text-xl">2.</span>
-          <div><strong>Check the NCR "Lapsed" List</strong> – If a lender appears on the <Link href="https://www.ncr.org.za" className="text-indigo-600 underline">Lapsed Registrations</Link> list, they are no longer authorised to lend.</div>
+          <div><strong>Check the NCR "Lapsed" List</strong> – If a lender appears on the <Link href="https://www.ncr.org.za" className="text-indigo-600 underline">Lapsed Registrations</Link> list they may not be operating legally.</div>
         </div>
         <div className="flex items-start gap-3">
           <span className="text-green-600 font-bold text-xl">3.</span>
-          <div><strong>Use the SAFPS Yima Scanner</strong> – Paste the lender's website into <Link href="https://www.yima.org.za" className="text-indigo-600 underline">Yima</Link> to see if it's flagged as fraudulent.</div>
+          <div><strong>Use the SAFPS Yima Scanner</strong> – Paste the lender's website into <Link href="https://www.yima.org.za" className="text-indigo-600 underline">Yima</Link> to see if it's flagged.</div>
         </div>
         <div className="flex items-start gap-3">
           <span className="text-green-600 font-bold text-xl">4.</span>
@@ -114,7 +114,7 @@ export default function PaydayLoanScamsPage() {
             <tr className="border-t"><td className="px-4 py-2">Supreme Finance</td><td className="px-4 py-2">NCRCP7342</td><td className="px-4 py-2"><Link href="https://www.supremefinance.co.za" className="text-indigo-600 underline">supremefinance.co.za</Link></td></tr>
           </tbody>
         </table>
-        <p className="text-xs text-slate-400 mt-2">Always double‑check registration status on the <Link href="https://www.ncr.org.za" className="underline">NCR website</Link> – registrations change frequently.</p>
+        <p className="text-xs text-slate-500 mt-2">Always double‑check registration status on the <Link href="https://www.ncr.org.za" className="underline text-indigo-600">NCR website</Link> – registrations change.</p>
       </div>
 
       {/* What to Do If Scammed */}
@@ -166,7 +166,7 @@ export default function PaydayLoanScamsPage() {
               alert("Network error. Please check your connection.");
             }
           }}
-          className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-colors text-lg"
+          className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all hover:scale-105 text-lg"
         >
           🚨 Report a Loan Scam (anonymously)
         </button>
@@ -177,12 +177,12 @@ export default function PaydayLoanScamsPage() {
 
       {/* Footer Navigation */}
       <div className="mt-12 pt-6 border-t border-slate-200 text-center text-slate-500 text-sm">
-        <Link href="/banking-fraud-south-africa" className="mx-2 hover:text-indigo-600">Banking Fraud</Link> •
-        <Link href="/investment-scams" className="mx-2 hover:text-indigo-600">Investment Scams</Link> •
-        <Link href="/payday-loan-scams" className="mx-2 hover:text-indigo-600">Payday Loan Scams</Link> •
-        <Link href="/whatsapp-scams" className="mx-2 hover:text-indigo-600">WhatsApp Scams</Link> •
-        <Link href="/medical-aid-fraud-south-africa" className="mx-2 hover:text-indigo-600">Medical Aid Fraud</Link> •
-        <Link href="/scam-psychology" className="mx-2 hover:text-indigo-600">Scam Psychology</Link>
+        <Link href="/banking-fraud-south-africa" className="mx-2 hover:text-indigo-600 text-slate-500">Banking Fraud</Link> •
+        <Link href="/investment-scams" className="mx-2 hover:text-indigo-600 text-slate-500">Investment Scams</Link> •
+        <Link href="/payday-loan-scams" className="mx-2 hover:text-indigo-600 text-slate-500">Payday Loan Scams</Link> •
+        <Link href="/whatsapp-scams" className="mx-2 hover:text-indigo-600 text-slate-500">WhatsApp Scams</Link> •
+        <Link href="/medical-aid-fraud-south-africa" className="mx-2 hover:text-indigo-600 text-slate-500">Medical Aid Fraud</Link> •
+        <Link href="/scam-psychology" className="mx-2 hover:text-indigo-600 text-slate-500">Scam Psychology</Link>
       </div>
     </main>
   );
