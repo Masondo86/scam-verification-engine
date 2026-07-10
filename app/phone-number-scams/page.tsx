@@ -1,4 +1,3 @@
-
 // app/phone-number-scams/page.tsx
 import Link from 'next/link';
 import { Metadata } from 'next';
@@ -30,17 +29,17 @@ export default function PhoneNumberScamsPage() {
         <div className="bg-white rounded-2xl shadow-md p-6 text-center border border-slate-100">
           <div className="text-3xl font-bold text-red-600">1.6B</div>
           <div className="text-slate-600 text-sm">Scam calls received in SA (2025)</div>
-          <div className="text-xs text-slate-400 mt-2">Source: Truecaller</div>
+          <div className="text-xs text-slate-500 mt-2">Source: Truecaller</div>
         </div>
         <div className="bg-white rounded-2xl shadow-md p-6 text-center border border-slate-100">
           <div className="text-3xl font-bold text-yellow-600">72%</div>
           <div className="text-slate-600 text-sm">of SA adults have been targeted by phone scams</div>
-          <div className="text-xs text-slate-400 mt-2">Source: SABRIC</div>
+          <div className="text-xs text-slate-500 mt-2">Source: SABRIC</div>
         </div>
         <div className="bg-white rounded-2xl shadow-md p-6 text-center border border-slate-100">
           <div className="text-3xl font-bold text-purple-600">R1.2B</div>
           <div className="text-slate-600 text-sm">Lost to vishing and SIM swap fraud (2024)</div>
-          <div className="text-xs text-slate-400 mt-2">Source: SAPS</div>
+          <div className="text-xs text-slate-500 mt-2">Source: SAPS</div>
         </div>
       </div>
 
@@ -96,7 +95,7 @@ export default function PhoneNumberScamsPage() {
 
       {/* Check a number */}
       <div className="mt-8 text-center">
-        <Link href="/scan" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-semibold text-white shadow-lg hover:shadow-xl transition-all">
+        <Link href="/scan" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-semibold text-white shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all hover:scale-105">
           🔍 Check a Phone Number Now
         </Link>
         <p className="text-slate-500 text-sm mt-2">Paste a suspicious phone number – get a free risk score instantly.</p>
@@ -104,12 +103,12 @@ export default function PhoneNumberScamsPage() {
 
       {/* Footer navigation */}
       <div className="mt-12 pt-6 border-t border-slate-200 text-center text-slate-500 text-sm">
-        <Link href="/banking-fraud-south-africa" className="mx-2 hover:text-indigo-600">Banking Fraud</Link> •
-        <Link href="/investment-scams" className="mx-2 hover:text-indigo-600">Investment Scams</Link> •
-        <Link href="/whatsapp-scams" className="mx-2 hover:text-indigo-600">WhatsApp Scams</Link> •
-        <Link href="/phone-number-scams" className="mx-2 hover:text-indigo-600">Phone Number Scams</Link> •
-        <Link href="/medical-aid-fraud-south-africa" className="mx-2 hover:text-indigo-600">Medical Aid Fraud</Link> •
-        <Link href="/scam-psychology" className="mx-2 hover:text-indigo-600">Scam Psychology</Link>
+        <Link href="/banking-fraud-south-africa" className="mx-2 hover:text-indigo-600 text-slate-500">Banking Fraud</Link> •
+        <Link href="/investment-scams" className="mx-2 hover:text-indigo-600 text-slate-500">Investment Scams</Link> •
+        <Link href="/whatsapp-scams" className="mx-2 hover:text-indigo-600 text-slate-500">WhatsApp Scams</Link> •
+        <Link href="/phone-number-scams" className="mx-2 hover:text-indigo-600 text-slate-500">Phone Number Scams</Link> •
+        <Link href="/medical-aid-fraud-south-africa" className="mx-2 hover:text-indigo-600 text-slate-500">Medical Aid Fraud</Link> •
+        <Link href="/scam-psychology" className="mx-2 hover:text-indigo-600 text-slate-500">Scam Psychology</Link>
       </div>
     </main>
   );
