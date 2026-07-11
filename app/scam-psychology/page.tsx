@@ -17,8 +17,6 @@ export const metadata: Metadata = {
 export default function ScamPsychologyPage() {
   return (
     <main className="max-w-4xl mx-auto px-4 py-12">
-      <Link href="/" className="text-indigo-600 text-sm mb-6 inline-block">← Back to Home</Link>
-      
       <h1 className="text-4xl font-bold mb-4 text-slate-900">Scam Psychology: How Fraudsters Manipulate Your Mind</h1>
       <p className="text-xl text-slate-600 mb-8">
         Scams don't just exploit technology – they exploit human nature. Learn the psychological principles behind fraud so you can recognise them before it's too late.
@@ -29,17 +27,17 @@ export default function ScamPsychologyPage() {
         <div className="bg-white rounded-2xl shadow-md p-6 text-center border border-slate-100">
           <div className="text-3xl font-bold text-red-600">90%+</div>
           <div className="text-slate-600 text-sm">Scams rely on psychological manipulation, not technical hacking</div>
-          <div className="text-xs text-slate-500 mt-2">Source: Social engineering studies</div>
+          <div className="text-xs text-slate-400 mt-2">Source: Social engineering studies</div>
         </div>
         <div className="bg-white rounded-2xl shadow-md p-6 text-center border border-slate-100">
           <div className="text-3xl font-bold text-yellow-600">5x</div>
           <div className="text-slate-600 text-sm">People are more likely to fall for scams when under time pressure</div>
-          <div className="text-xs text-slate-500 mt-2">Source: Behavioural economics research</div>
+          <div className="text-xs text-slate-400 mt-2">Source: Behavioural economics research</div>
         </div>
         <div className="bg-white rounded-2xl shadow-md p-6 text-center border border-slate-100">
           <div className="text-3xl font-bold text-purple-600">87%</div>
           <div className="text-slate-600 text-sm">Of scam victims later said they "felt something was wrong" but ignored it</div>
-          <div className="text-xs text-slate-500 mt-2">Source: Victim surveys</div>
+          <div className="text-xs text-slate-400 mt-2">Source: Victim surveys</div>
         </div>
       </div>
 
@@ -51,54 +49,54 @@ export default function ScamPsychologyPage() {
       </p>
 
       {/* Cialdini's 6 Principles */}
-      <h2 className="text-2xl font-bold mb-4 text-slate-900">Cialdini’s 6 Principles of Persuasion – Used by Scammers</h2>
+      <h2 className="text-2xl font-bold mb-4 text-slate-900">Cialdini's 6 Principles of Persuasion – Used by Scammers</h2>
       <div className="space-y-6 mb-8">
-        <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
-          <h3 className="text-xl font-semibold text-slate-900 mb-2">👑 Authority</h3>
+        <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500">
+          <h3 className="text-xl font-semibold text-red-700 mb-1">👑 Authority</h3>
           <p className="text-slate-600">Scammers impersonate banks, SARS, SAPS, or medical aids. They use official-sounding titles, fake badges, and spoofed phone numbers to appear legitimate.</p>
-          <p className="text-sm text-slate-500 mt-2"><strong>Example:</strong> “This is Captain Ndlovu from SAPS Cybercrime Unit. Your ID has been used in a fraud case.”</p>
+          <p className="text-sm text-slate-500 mt-2"><strong>Example:</strong> "This is Captain Ndlovu from SAPS Cybercrime Unit. Your ID has been used in a fraud case."</p>
           <p className="text-sm text-indigo-600 mt-1">✅ Defence: Always verify via official channels – call back on a number you trust.</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
-          <h3 className="text-xl font-semibold text-slate-900 mb-2">⏳ Scarcity</h3>
-          <p className="text-slate-600">“Limited time offer”, “only 5 spots left”, “your account will be suspended in 24 hours”. Scarcity creates panic and bypasses logic.</p>
-          <p className="text-sm text-slate-500 mt-2"><strong>Example:</strong> “Your R2,500 SARS refund expires today. Click here to claim.”</p>
+        <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500">
+          <h3 className="text-xl font-semibold text-red-700 mb-1">⏳ Scarcity</h3>
+          <p className="text-slate-600">"Limited time offer", "only 5 spots left", "your account will be suspended in 24 hours". Scarcity creates panic and bypasses logic.</p>
+          <p className="text-sm text-slate-500 mt-2"><strong>Example:</strong> "Your R2,500 SARS refund expires today. Click here to claim."</p>
           <p className="text-sm text-indigo-600 mt-1">✅ Defence: Real institutions do not impose sudden deadlines via SMS/email.</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
-          <h3 className="text-xl font-semibold text-slate-900 mb-2">👥 Social Proof</h3>
-          <p className="text-slate-600">Fake testimonials, fabricated “thousands have already invested”, or screenshots of WhatsApp groups claiming huge profits.</p>
-          <p className="text-sm text-slate-500 mt-2"><strong>Example:</strong> “Join our crypto trading group – see daily profit screenshots from 500+ members.”</p>
-          <p className="text-sm text-indigo-600 mt-1">✅ Defence: Be sceptical of unsolicited success stories. Real investments have risks and don’t need WhatsApp hype.</p>
+        <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500">
+          <h3 className="text-xl font-semibold text-red-700 mb-1">👥 Social Proof</h3>
+          <p className="text-slate-600">Fake testimonials, fabricated "thousands have already invested", or screenshots of WhatsApp groups claiming huge profits.</p>
+          <p className="text-sm text-slate-500 mt-2"><strong>Example:</strong> "Join our crypto trading group – see daily profit screenshots from 500+ members."</p>
+          <p className="text-sm text-indigo-600 mt-1">✅ Defence: Be sceptical of unsolicited success stories. Real investments have risks and don't need WhatsApp hype.</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
-          <h3 className="text-xl font-semibold text-slate-900 mb-2">🔗 Commitment & Consistency</h3>
-          <p className="text-slate-600">Scammers start with a small request (e.g., “just confirm your email”) then escalate. Once you comply, you feel pressured to stay consistent.</p>
-          <p className="text-sm text-slate-500 mt-2"><strong>Example:</strong> First, they ask for your name. Then your ID. Then a “small deposit”. Then the full amount.</p>
+        <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500">
+          <h3 className="text-xl font-semibold text-red-700 mb-1">🔗 Commitment & Consistency</h3>
+          <p className="text-slate-600">Scammers start with a small request (e.g., "just confirm your email") then escalate. Once you comply, you feel pressured to stay consistent.</p>
+          <p className="text-sm text-slate-500 mt-2"><strong>Example:</strong> First, they ask for your name. Then your ID. Then a "small deposit". Then the full amount.</p>
           <p className="text-sm text-indigo-600 mt-1">✅ Defence: Never agree to anything over the phone. Stop at the first unusual request.</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
-          <h3 className="text-xl font-semibold text-slate-900 mb-2">😊 Liking</h3>
+        <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500">
+          <h3 className="text-xl font-semibold text-red-700 mb-1">😊 Liking</h3>
           <p className="text-slate-600">Scammers build rapport – they use your name, pretend to share interests, or send friendly WhatsApp messages. People are more likely to trust those they like.</p>
-          <p className="text-sm text-slate-500 mt-2"><strong>Example:</strong> “Hi Mom, I lost my phone. This is my new number. Can you send R500 for groceries?”</p>
+          <p className="text-sm text-slate-500 mt-2"><strong>Example:</strong> "Hi Mom, I lost my phone. This is my new number. Can you send R500 for groceries?"</p>
           <p className="text-sm text-indigo-600 mt-1">✅ Defence: Verify identity by calling the original number or asking a question only they would know.</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
-          <h3 className="text-xl font-semibold text-slate-900 mb-2">🎁 Reciprocity</h3>
-          <p className="text-slate-600">Scammers give something first – a “free” e‑book, a “gift card”, or “help” with a problem – then expect something in return (your information).</p>
-          <p className="text-sm text-slate-500 mt-2"><strong>Example:</strong> “We noticed an unauthorised transaction. Let me help you reverse it. First, please confirm your account number.”</p>
+        <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500">
+          <h3 className="text-xl font-semibold text-red-700 mb-1">🎁 Reciprocity</h3>
+          <p className="text-slate-600">Scammers give something first – a "free" e-book, a "gift card", or "help" with a problem – then expect something in return (your information or money).</p>
+          <p className="text-sm text-slate-500 mt-2"><strong>Example:</strong> "We noticed an unauthorised transaction. Let me help you reverse it. First, please confirm your account number."</p>
           <p className="text-sm text-indigo-600 mt-1">✅ Defence: Unsolicited help is rarely genuine. Never share sensitive data with someone who contacted you first.</p>
         </div>
       </div>
 
-      {/* Real-World Example: How Multiple Principles Combine */}
-      <h2 className="text-2xl font-bold mb-4 text-slate-900">Real‑World Example: The “Bank Impersonation” Call</h2>
-      <div className="bg-white rounded-xl shadow-sm p-5 mb-8 border border-slate-100">
+      {/* Real-World Example */}
+      <h2 className="text-2xl font-bold mb-4 text-slate-900">Real-World Example: The "Bank Impersonation" Call</h2>
+      <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-100 mb-8">
         <p className="text-slate-600 mb-3">A typical vishing call uses:</p>
         <ul className="list-disc pl-6 space-y-2 text-slate-600">
-          <li><strong>Authority</strong> – “I’m from FNB Fraud Department” (spoofed number).</li>
-          <li><strong>Scarcity</strong> – “Your account will be locked in 1 hour”.</li>
-          <li><strong>Reciprocity</strong> – “We’ll help you secure your money, but first you must confirm your OTP”.</li>
+          <li><strong>Authority</strong> – "I'm from FNB Fraud Department" (spoofed number).</li>
+          <li><strong>Scarcity</strong> – "Your account will be locked in 1 hour".</li>
+          <li><strong>Reciprocity</strong> – "We'll help you secure your money, but first you must confirm your OTP".</li>
           <li><strong>Liking</strong> – They use your name and are very polite.</li>
         </ul>
         <p className="text-slate-600 mt-3">By recognising each principle, you can see the scam beneath the friendly voice.</p>
@@ -109,37 +107,28 @@ export default function ScamPsychologyPage() {
       <div className="space-y-4 mb-8">
         <div className="p-4 bg-green-50 rounded-xl border border-green-100">
           <h3 className="font-bold text-green-800">1. Pause and breathe</h3>
-          <p className="text-slate-600">Scams create artificial urgency. Always take 60 seconds to think before acting.</p>
+          <p className="text-slate-600 text-sm">Scams create artificial urgency. Always take 60 seconds to think before acting.</p>
         </div>
         <div className="p-4 bg-green-50 rounded-xl border border-green-100">
           <h3 className="font-bold text-green-800">2. Verify independently</h3>
-          <p className="text-slate-600">Call the institution using a number from their official website – never the one provided in the message.</p>
+          <p className="text-slate-600 text-sm">Call the institution using a number from their official website – never the one provided in the message.</p>
         </div>
         <div className="p-4 bg-green-50 rounded-xl border border-green-100">
           <h3 className="font-bold text-green-800">3. Ask a trusted person</h3>
-          <p className="text-slate-600">Scammers rely on isolation. Tell a friend or family member – they may spot red flags you missed.</p>
+          <p className="text-slate-600 text-sm">Scammers rely on isolation. Tell a friend or family member – they may spot red flags you missed.</p>
         </div>
         <div className="p-4 bg-green-50 rounded-xl border border-green-100">
           <h3 className="font-bold text-green-800">4. Use the scam checker</h3>
-          <p className="text-slate-600">Paste the suspicious message, URL, or phone number into our free tool – it will detect manipulation tactics.</p>
+          <p className="text-slate-600 text-sm">Paste the suspicious message, URL, or phone number into our free tool – it will detect manipulation tactics.</p>
         </div>
       </div>
 
       {/* CTA to Scanner */}
       <div className="mt-8 text-center">
-        <Link href="/scan" className="inline-block bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl px-8 py-3 shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all hover:scale-105">
+        <Link href="/scan" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-semibold text-white shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all hover:scale-105">
           🧠 Check a Suspicious Message for Manipulation
         </Link>
-        <p className="text-slate-600 text-sm mt-2">Our AI analyses urgency, authority, and fear tactics – free and instant.</p>
-      </div>
-
-      {/* Footer Navigation */}
-      <div className="mt-12 pt-6 border-t border-slate-200 text-center text-slate-500 text-sm">
-        <Link href="/banking-fraud-south-africa" className="mx-2 hover:text-indigo-600 text-slate-500">Banking Fraud</Link> •
-        <Link href="/investment-scams" className="mx-2 hover:text-indigo-600 text-slate-500">Investment Scams</Link> •
-        <Link href="/whatsapp-scams" className="mx-2 hover:text-indigo-600 text-slate-500">WhatsApp Scams</Link> •
-        <Link href="/medical-aid-fraud-south-africa" className="mx-2 hover:text-indigo-600 text-slate-500">Medical Aid Fraud</Link> •
-        <Link href="/scam-psychology" className="mx-2 hover:text-indigo-600 text-slate-500">Scam Psychology</Link>
+        <p className="text-slate-500 text-sm mt-2">Our AI analyses urgency, authority, and fear tactics – free and instant.</p>
       </div>
     </main>
   );
