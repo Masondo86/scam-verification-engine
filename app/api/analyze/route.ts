@@ -1,12 +1,13 @@
 
+// app/api/analyze/route.ts
 import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { analyzeMessageNLP } from '@/app/lib/nlp-analyze';
 import { knownScams } from '@/app/data/known-scams';
-import { getSEONPhoneReputation } from '@/app/services/seonPhone';
-import { getSEONEmailReputation } from '@/app/services/seonEmail';
 import { getIPQSURLReputation } from '@/app/services/ipqsUrl';
+import { getAbstractPhoneReputation } from '@/app/services/abstractPhone';
+import { getAbstractEmailReputation } from '@/app/services/abstractEmail';
 import { checkPresence } from '@/app/services/trust-signals/presence';
 import { fetchNews } from '@/app/services/trust-signals/news';
 import { searchWeb } from '@/app/services/trust-signals/search';
@@ -247,6 +248,7 @@ async function evaluateUrl(content: string): Promise<AnalyzeResponse> {
     };
   }
 
+  // 🔍 IPQS URL Reputation
   if (result.riskLevel !== 'High') {
     console.log(`[IPQS-URL] Checking URL: ${content}`);
     const ipqsData = await getIPQSURLReputation(content);
@@ -294,26 +296,18 @@ async function evaluatePhone(content: string): Promise<AnalyzeResponse> {
     };
   }
 
-  console.log(`[SEON-PHONE] Checking phone: ${phone}`);
-  const seonData = await getSEONPhoneReputation(phone);
+  // ✅ Abstract Phone Reputation (replaces SEON)
+  console.log(`[ABSTRACT-PHONE] Checking phone: ${phone}`);
+  const abstractData = await getAbstractPhoneReputation(phone);
 
-  if (!seonData) {
-    console.warn(`[SEON-PHONE] No data returned for phone: ${phone}`);
+  if (!abstractData) {
+    console.warn(`[ABSTRACT-PHONE] No data returned for phone: ${phone}`);
   } else {
-    result.reasons.push(...seonData.reasons);
-
-    if (seonData.riskScore >= 85) {
-      result.confidence = Math.max(result.confidence, 90);
-      result.riskLevel = 'High';
-    } else if (seonData.riskScore >= 60) {
-      result.confidence = Math.max(result.confidence, 75);
-      result.riskLevel = 'High';
-    } else if (seonData.riskScore >= 30) {
-      result.confidence = Math.max(result.confidence, 50);
-      if (result.riskLevel === 'Low') result.riskLevel = 'Medium';
-    } else {
-      result.confidence = Math.min(result.confidence + seonData.riskScore, 100);
-    }
+    result.reasons.push(...abstractData.reasons);
+    const boost = abstractData.riskScore * 0.5;
+    result.confidence = Math.min(result.confidence + boost, 100);
+    if (result.confidence >= 70) result.riskLevel = 'High';
+    else if (result.confidence >= 40) result.riskLevel = 'Medium';
   }
 
   return result;
@@ -327,25 +321,26 @@ async function evaluateEmail(content: string): Promise<AnalyzeResponse> {
     recommendation: 'Proceed with caution. Verify sender independently.',
   };
 
-  console.log(`[SEON-EMAIL] Checking email: ${content}`);
-  const seonData = await getSEONEmailReputation(content);
+  // ✅ Abstract Email Reputation (replaces SEON)
+  console.log(`[ABSTRACT-EMAIL] Checking email: ${content}`);
+  const abstractData = await getAbstractEmailReputation(content);
 
-  if (!seonData) {
-    console.warn(`[SEON-EMAIL] No data returned for email: ${content}`);
+  if (!abstractData) {
+    console.warn(`[ABSTRACT-EMAIL] No data returned for email: ${content}`);
   } else {
-    result.reasons.push(...seonData.reasons);
+    result.reasons.push(...abstractData.reasons);
 
-    if (seonData.fraudScore >= 85) {
+    if (abstractData.riskScore >= 85) {
       result.confidence = Math.max(result.confidence, 90);
       result.riskLevel = 'High';
-    } else if (seonData.fraudScore >= 60) {
+    } else if (abstractData.riskScore >= 60) {
       result.confidence = Math.max(result.confidence, 75);
       result.riskLevel = 'High';
-    } else if (seonData.fraudScore >= 30) {
+    } else if (abstractData.riskScore >= 30) {
       result.confidence = Math.max(result.confidence, 50);
       if (result.riskLevel === 'Low') result.riskLevel = 'Medium';
     } else {
-      result.confidence = Math.min(result.confidence + seonData.fraudScore, 100);
+      result.confidence = Math.min(result.confidence + abstractData.riskScore, 100);
     }
   }
 
@@ -530,8 +525,6 @@ export async function POST(req: Request) {
     const urls = extractUrls(content);
     const phones = extractPhones(content);
     const sector = detectSector(content);
-
-    // ✅ Classify the scam category BEFORE inserting
     const category = classifyScam(content);
 
     void (async () => {
@@ -544,7 +537,7 @@ export async function POST(req: Request) {
         matched_patterns: result.reasons,
         sector: sector,
         ip_hash: ipHash,
-        scam_category: category, // ✅ NEW FIELD
+        scam_category: category,
         created_at: new Date(),
       });
       if (insertError) console.error('Failed to log scan:', insertError);
