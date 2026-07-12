@@ -1,26 +1,9 @@
 
+// app/api/stats/public/route.ts
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
-
-// South Africa Standard Time is UTC+2 year-round (no DST).
-// This builds an ISO timestamp with an explicit "+02:00" offset so the
-// result is correct regardless of what timezone the server itself runs in.
-function getSASTMidnightUTC(date: Date = new Date()): Date {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Africa/Johannesburg',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts(date);
-
-  const y = parts.find((p) => p.type === 'year')!.value;
-  const m = parts.find((p) => p.type === 'month')!.value;
-  const d = parts.find((p) => p.type === 'day')!.value;
-
-  return new Date(`${y}-${m}-${d}T00:00:00+02:00`);
-}
 
 export async function GET() {
   const supabase = createClient(
@@ -28,40 +11,45 @@ export async function GET() {
     process.env.SUPABASE_ANON_KEY!
   );
 
-  // Correct SAST-based day/week boundaries (see getSASTMidnightUTC above)
-  const todayStart = getSASTMidnightUTC();
+  // ---- Timezone: South Africa Standard Time (UTC+2) ----
+  const now = new Date();
+  // Convert to SAST by adding 2 hours to UTC (or using toLocaleString with timezone)
+  const saTime = new Date(now.toLocaleString('en-US', { timeZone: 'Africa/Johannesburg' }));
+  const todayStart = new Date(saTime);
+  todayStart.setHours(0, 0, 0, 0);
+  const todayStartISO = todayStart.toISOString();
 
-  const weekStart = new Date(todayStart);
-  weekStart.setUTCDate(weekStart.getUTCDate() - 7);
+  const weekStart = new Date(saTime);
+  weekStart.setDate(weekStart.getDate() - 7);
+  weekStart.setHours(0, 0, 0, 0);
+  const weekStartISO = weekStart.toISOString();
 
-  console.log('[Stats] Today start (SAST):', todayStart.toISOString());
-  console.log('[Stats] Week start (SAST):', weekStart.toISOString());
+  console.log('[Stats] Today start (SAST):', todayStartISO);
+  console.log('[Stats] Week start (SAST):', weekStartISO);
 
-  // Count scans today
+  // ---- Counts ----
   const { count: scamsToday, error: err1 } = await supabase
     .from('scan_events')
     .select('*', { count: 'exact', head: true })
-    .gte('created_at', todayStart.toISOString());
+    .gte('created_at', todayStartISO);
 
   if (err1) console.error('[Stats] Error counting today:', err1);
 
-  // Count high-risk this week
   const { count: highRiskThisWeek, error: err2 } = await supabase
     .from('scan_events')
     .select('*', { count: 'exact', head: true })
-    .gte('created_at', weekStart.toISOString())
+    .gte('created_at', weekStartISO)
     .eq('verdict', 'High');
 
   if (err2) console.error('[Stats] Error counting high-risk:', err2);
 
-  // Total scans
   const { count: totalScans, error: err3 } = await supabase
     .from('scan_events')
     .select('*', { count: 'exact', head: true });
 
   if (err3) console.error('[Stats] Error counting total:', err3);
 
-  // Recent flagged domains (high-risk URL scans)
+  // ---- Recent flagged domains (High-risk URL scans) ----
   const { data: recentHighRisk, error: err4 } = await supabase
     .from('scan_events')
     .select('input_text, created_at')
@@ -74,17 +62,20 @@ export async function GET() {
 
   // Extract domains from input_text
   const domains = recentHighRisk
-    ?.map((row) => {
+    ?.map(row => {
       const text = row.input_text || '';
+      // Try to extract domain from URL
       const urlMatch = text.match(/(?:https?:\/\/)?(?:www\.)?([a-z0-9-]+\.[a-z]{2,}(?:\.[a-z]{2,})?)/i);
       if (urlMatch) {
         return urlMatch[1].split('/')[0].split('?')[0];
       }
+      // If no URL, try a plain domain pattern
       const domainMatch = text.match(/\b([a-z0-9-]+\.[a-z]{2,}(?:\.[a-z]{2,})?)\b/i);
       return domainMatch ? domainMatch[1] : null;
     })
     .filter(Boolean) as string[];
 
+  // Remove duplicates, keep first 5
   const recentFlaggedDomains = [...new Set(domains)].slice(0, 5);
 
   const response = {
@@ -96,6 +87,7 @@ export async function GET() {
 
   console.log('[Stats] Response:', JSON.stringify(response, null, 2));
 
+  // ---- Return with cache-control headers ----
   return NextResponse.json(response, {
     headers: {
       'Cache-Control': 'no-cache, no-store, must-revalidate',
