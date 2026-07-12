@@ -69,11 +69,12 @@ export default function LiveStats() {
   return (
     <div className="bg-slate-800/90 backdrop-blur-sm rounded-2xl border border-white/10 shadow-xl p-5">
       <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8">
+        {/* ✅ Changed label from "Scams Today" to "Scans Today" */}
         <div className="text-center">
           <div className="text-2xl md:text-3xl font-bold text-indigo-300 drop-shadow-[0_0_10px_rgba(99,102,241,0.3)]">
             {stats.scamsToday}
           </div>
-          <div className="text-xs text-slate-300 font-medium uppercase tracking-wider">Scams Today</div>
+          <div className="text-xs text-slate-300 font-medium uppercase tracking-wider">Scans Today</div>
         </div>
 
         <div className="text-center">
