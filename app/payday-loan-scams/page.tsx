@@ -42,7 +42,7 @@ export default function PaydayLoanScamsPage() {
   };
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-12">
+    <main className="max-w-4xl mx-auto px-4 py-12 bg-white">
       <h1 className="text-4xl font-bold mb-4 text-slate-900">Payday Loan Scams in South Africa</h1>
       <p className="text-xl text-slate-600 mb-8">
         How to spot fake lenders, verify NCR registration, and avoid losing money to illegal loan sharks.
@@ -67,7 +67,7 @@ export default function PaydayLoanScamsPage() {
         </div>
       </div>
 
-      {/* CTA to Scanner - moved to top for immediate action */}
+      {/* CTA to Scanner */}
       <div className="mb-12 text-center bg-indigo-50 rounded-xl p-6 border border-indigo-100">
         <h2 className="text-2xl font-bold text-indigo-800 mb-3">Verify a Suspicious Loan Offer</h2>
         <p className="text-slate-600 mb-4">Paste the SMS, WhatsApp message, website URL, or phone number – free & instant.</p>
