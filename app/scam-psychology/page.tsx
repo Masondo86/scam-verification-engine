@@ -1,6 +1,6 @@
 // app/scam-psychology/page.tsx
 import Link from 'next/link';
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Scam Psychology: How Fraudsters Manipulate Your Mind',
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function ScamPsychologyPage() {
   return (
-    <main className="max-w-4xl mx-auto px-4 py-12">
+    <main className="max-w-4xl mx-auto px-4 py-12 bg-white">
       <h1 className="text-4xl font-bold mb-4 text-slate-900">Scam Psychology: How Fraudsters Manipulate Your Mind</h1>
       <p className="text-xl text-slate-600 mb-8">
         Scams don't just exploit technology – they exploit human nature. Learn the psychological principles behind fraud so you can recognise them before it's too late.
