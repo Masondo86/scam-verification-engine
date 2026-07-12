@@ -1,33 +1,14 @@
-import BroaderExposureSection from "@/components/BroaderExposureSection";
-import Link from 'next/link';
-import type { Metadata } from 'next';
-import InternalFraudLinks from '@/components/InternalFraudLinks';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'WhatsApp Scams in South Africa | YourBrand',
-  description:
-    'Understand common WhatsApp scams targeting South Africans and learn how to verify suspicious messages safely.',
-  openGraph: {
-    title: 'WhatsApp Scams in South Africa | YourBrand',
-    description:
-      'Understand common WhatsApp scams targeting South Africans and learn how to verify suspicious messages safely.',
-    url: 'https://checkascam.co.za/whatsapp-scams',
-    type: 'website',
-  },
-};
+import Link from 'next/link';
 
 export default function WhatsAppScamsPage() {
   return (
-    <main className="max-w-4xl mx-auto px-4 py-12">
-      
-      {/* Back Link */}
-      <Link href="/" className="text-indigo-600 hover:text-indigo-600 mb-8 inline-block">
-        ← Back to Home
-      </Link>
+    <main className="max-w-4xl mx-auto px-4 py-12 bg-white">
 
       {/* Header */}
       <header className="mb-12">
-        <h1 className="text-4xl font-extrabold text-slate-900 mb-4">
+        <h1 className="text-4xl font-bold text-slate-900 mb-4">
           WhatsApp Scams in South Africa
         </h1>
         <p className="text-xl text-slate-600">
@@ -440,53 +421,50 @@ export default function WhatsAppScamsPage() {
           </div>
         </div>
       </section>
-      <BroaderExposureSection />
+
       {/* FAQ Section */}
-<section className="mt-16 border-t border-slate-200 pt-12">
-  <h2 className="text-3xl font-bold text-slate-900 mb-8">
-    Frequently Asked Questions
-  </h2>
+      <section className="mt-16 border-t border-slate-200 pt-12">
+        <h2 className="text-3xl font-bold text-slate-900 mb-8">
+          Frequently Asked Questions
+        </h2>
 
-  <div className="space-y-8">
+        <div className="space-y-8">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
+            <h3 className="text-lg font-bold text-indigo-600 mb-3">
+              Can scammers reuse my phone number after a WhatsApp scam?
+            </h3>
+            <p className="text-slate-600 text-sm">
+              Yes. Phone numbers collected during scams are often redistributed
+              across other fraud campaigns. This can lead to repeated phishing
+              messages or impersonation attempts.
+            </p>
+          </div>
 
-    <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
-      <h3 className="text-lg font-bold text-indigo-600 mb-3">
-        Can scammers reuse my phone number after a WhatsApp scam?
-      </h3>
-      <p className="text-slate-600 text-sm">
-        Yes. Phone numbers collected during scams are often redistributed
-        across other fraud campaigns. This can lead to repeated phishing
-        messages or impersonation attempts.
-      </p>
-    </div>
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
+            <h3 className="text-lg font-bold text-indigo-600 mb-3">
+              Should I change my number after responding to a scam?
+            </h3>
+            <p className="text-slate-600 text-sm">
+              In most cases, strengthening account security and monitoring unusual
+              activity is sufficient. Changing your number may only be necessary if
+              repeated targeting continues.
+            </p>
+          </div>
 
-    <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
-      <h3 className="text-lg font-bold text-indigo-600 mb-3">
-        Should I change my number after responding to a scam?
-      </h3>
-      <p className="text-slate-600 text-sm">
-        In most cases, strengthening account security and monitoring unusual
-        activity is sufficient. Changing your number may only be necessary if
-        repeated targeting continues.
-      </p>
-    </div>
-
-    <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
-      <h3 className="text-lg font-bold text-indigo-600 mb-3">
-        Why do scammers focus on WhatsApp in South Africa?
-      </h3>
-      <p className="text-slate-600 text-sm">
-        WhatsApp has extremely high adoption in South Africa,
-        making it a preferred channel for fraudsters.
-      </p>
-    </div>
-
-  </div>
-</section>
-
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
+            <h3 className="text-lg font-bold text-indigo-600 mb-3">
+              Why do scammers focus on WhatsApp in South Africa?
+            </h3>
+            <p className="text-slate-600 text-sm">
+              WhatsApp has extremely high adoption in South Africa,
+              making it a preferred channel for fraudsters.
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* CTA */}
-      <section className="p-8 bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-xl border border-slate-100">
+      <section className="p-8 bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-xl border border-slate-100 mt-12">
         <h3 className="text-2xl font-bold text-slate-900 mb-4">Verify Suspicious Messages</h3>
         <p className="text-slate-600 mb-6">
           Got a suspicious WhatsApp message? Don't risk it - scan it for free.
@@ -498,28 +476,6 @@ export default function WhatsAppScamsPage() {
           Scan Message Now →
         </Link>
       </section>
-
-      {/* More Resources */}
-      <section className="mt-12 grid md:grid-cols-2 gap-6">
-        <Link href="/how-scams-work" className="bg-white rounded-xl shadow-sm p-6 border border-slate-100 hover:border-indigo-200 transition-all">
-          <h3 className="font-bold text-indigo-600 mb-2">How Scams Work →</h3>
-          <p className="text-slate-600 text-sm">Understand the psychology behind fraud</p>
-        </Link>
-        <Link href="/banking-fraud-south-africa" className="bg-white rounded-xl shadow-sm p-6 border border-slate-100 hover:border-pink-200 transition-all">
-          <h3 className="font-bold text-pink-600 mb-2">SA Banking Fraud →</h3>
-          <p className="text-slate-600 text-sm">Bank impersonation tactics and official resources</p>
-        </Link>
-      </section>
-
-      <InternalFraudLinks />
-      <div className="mt-12 pt-6 border-t border-slate-200 text-center text-slate-500 text-sm">
-        <Link href="/banking-fraud-south-africa" className="mx-2 hover:text-indigo-600 text-slate-500">Banking Fraud</Link> •
-        <Link href="/investment-scams" className="mx-2 hover:text-indigo-600 text-slate-500">Investment Scams</Link> •
-        <Link href="/whatsapp-scams" className="mx-2 hover:text-indigo-600 text-slate-500">WhatsApp Scams</Link> •
-        <Link href="/phone-number-scams" className="mx-2 hover:text-indigo-600 text-slate-500">Phone Number Scams</Link> •
-        <Link href="/medical-aid-fraud-south-africa" className="mx-2 hover:text-indigo-600 text-slate-500">Medical Aid Fraud</Link> •
-        <Link href="/scam-psychology" className="mx-2 hover:text-indigo-600 text-slate-500">Scam Psychology</Link>
-      </div>
     </main>
   );
 }
