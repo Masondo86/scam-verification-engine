@@ -1,6 +1,6 @@
 // app/help-center/page.tsx
 import Link from 'next/link';
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Help & Resource Center | Scam Assistance & Safety Tips',
@@ -18,9 +18,7 @@ export const metadata: Metadata = {
 
 export default function HelpCenterPage() {
   return (
-    <main className="max-w-4xl mx-auto px-4 py-12">
-      <Link href="/" className="text-indigo-600 text-sm mb-6 inline-block">← Back to Home</Link>
-
+    <main className="max-w-4xl mx-auto px-4 py-12 bg-white">
       <h1 className="text-4xl font-bold mb-4 text-slate-900">Help & Resource Center</h1>
       <p className="text-xl text-slate-600 mb-8">
         If you've been targeted by a scam, find the right contacts and recovery steps below. Bookmark this page for quick access.
@@ -233,16 +231,6 @@ export default function HelpCenterPage() {
           🔍 Check a Suspicious Message, Number, or Link
         </Link>
         <p className="text-slate-500 text-sm mt-2">Always verify before you trust.</p>
-      </div>
-
-      {/* Footer navigation */}
-      <div className="mt-12 pt-6 border-t border-slate-200 text-center text-slate-500 text-sm">
-        <Link href="/banking-fraud-south-africa" className="mx-2 hover:text-indigo-600">Banking Fraud</Link> •
-        <Link href="/investment-scams" className="mx-2 hover:text-indigo-600">Investment Scams</Link> •
-        <Link href="/whatsapp-scams" className="mx-2 hover:text-indigo-600">WhatsApp Scams</Link> •
-        <Link href="/phone-number-scams" className="mx-2 hover:text-indigo-600">Phone Number Scams</Link> •
-        <Link href="/medical-aid-fraud-south-africa" className="mx-2 hover:text-indigo-600">Medical Aid Fraud</Link> •
-        <Link href="/scam-psychology" className="mx-2 hover:text-indigo-600">Scam Psychology</Link>
       </div>
     </main>
   );
