@@ -1,6 +1,6 @@
 // app/phone-number-scams/page.tsx
 import Link from 'next/link';
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Phone Number Scams in South Africa | How to Spot & Stop Them',
@@ -16,9 +16,7 @@ export const metadata: Metadata = {
 
 export default function PhoneNumberScamsPage() {
   return (
-    <main className="max-w-4xl mx-auto px-4 py-12">
-      <Link href="/" className="text-indigo-600 text-sm mb-6 inline-block">← Back to Home</Link>
-
+    <main className="max-w-4xl mx-auto px-4 py-12 bg-white">
       <h1 className="text-4xl font-bold mb-4 text-slate-900">Phone Number Scams in South Africa</h1>
       <p className="text-xl text-slate-600 mb-8">
         How scammers use your phone number to steal money and identity – and how to fight back.
@@ -29,40 +27,40 @@ export default function PhoneNumberScamsPage() {
         <div className="bg-white rounded-2xl shadow-md p-6 text-center border border-slate-100">
           <div className="text-3xl font-bold text-red-600">1.6B</div>
           <div className="text-slate-600 text-sm">Scam calls received in SA (2025)</div>
-          <div className="text-xs text-slate-500 mt-2">Source: Truecaller</div>
+          <div className="text-xs text-slate-400 mt-2">Source: Truecaller</div>
         </div>
         <div className="bg-white rounded-2xl shadow-md p-6 text-center border border-slate-100">
           <div className="text-3xl font-bold text-yellow-600">72%</div>
           <div className="text-slate-600 text-sm">of SA adults have been targeted by phone scams</div>
-          <div className="text-xs text-slate-500 mt-2">Source: SABRIC</div>
+          <div className="text-xs text-slate-400 mt-2">Source: SABRIC</div>
         </div>
         <div className="bg-white rounded-2xl shadow-md p-6 text-center border border-slate-100">
           <div className="text-3xl font-bold text-purple-600">R1.2B</div>
           <div className="text-slate-600 text-sm">Lost to vishing and SIM swap fraud (2024)</div>
-          <div className="text-xs text-slate-500 mt-2">Source: SAPS</div>
+          <div className="text-xs text-slate-400 mt-2">Source: SAPS</div>
         </div>
       </div>
 
       {/* Types of phone number scams */}
       <h2 className="text-2xl font-bold mb-4 text-slate-900">Common Phone Number Scams</h2>
       <div className="space-y-4 mb-8">
-        <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
+        <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500">
           <h3 className="text-xl font-bold text-red-700 mb-1">📞 Vishing (Voice Phishing)</h3>
           <p className="text-slate-600">Scammers call pretending to be your bank, SARS, or a service provider. They create urgency and ask you to share OTPs, PINs, or personal details.</p>
           <p className="text-sm text-slate-500 mt-2"><strong>Red flags:</strong> Unknown number, urgent threat, request for OTP or card details, spoofed caller ID.</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
+        <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500">
           <h3 className="text-xl font-bold text-red-700 mb-1">📱 SIM Swap Fraud</h3>
           <p className="text-slate-600">Criminals fraudulently port your phone number to a SIM they control. They then intercept OTPs and empty your bank accounts.</p>
           <p className="text-sm text-slate-500 mt-2"><strong>Red flags:</strong> Sudden loss of signal, SMS about a SIM swap you didn't request, unknown transactions.</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
+        <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500">
           <h3 className="text-xl font-bold text-red-700 mb-1">✉️ SMS Phishing (Smishing)</h3>
           <p className="text-slate-600">Fake SMS messages claiming to be from banks, couriers, or SARS. They contain links to fake websites that steal your credentials.</p>
           <p className="text-sm text-slate-500 mt-2"><strong>Red flags:</strong> Unsolicited link, urgent request, poor grammar, sender number not from official source.</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
-          <h3 className="text-xl font-bold text-red-700 mb-1">📊 “Missed Call” Scams</h3>
+        <div className="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500">
+          <h3 className="text-xl font-bold text-red-700 mb-1">📊 "Missed Call" Scams</h3>
           <p className="text-slate-600">Scammers make a call that rings once and hangs up. If you call back, you're connected to a premium-rate number that charges exorbitant fees.</p>
           <p className="text-sm text-slate-500 mt-2"><strong>Red flags:</strong> Unknown international or premium-rate numbers; you don't recognise the number.</p>
         </div>
@@ -95,20 +93,10 @@ export default function PhoneNumberScamsPage() {
 
       {/* Check a number */}
       <div className="mt-8 text-center">
-        <Link href="/scan" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-semibold text-white shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all hover:scale-105">
+        <Link href="/scan" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-semibold text-white shadow-lg hover:shadow-xl transition-all">
           🔍 Check a Phone Number Now
         </Link>
         <p className="text-slate-500 text-sm mt-2">Paste a suspicious phone number – get a free risk score instantly.</p>
-      </div>
-
-      {/* Footer navigation */}
-      <div className="mt-12 pt-6 border-t border-slate-200 text-center text-slate-500 text-sm">
-        <Link href="/banking-fraud-south-africa" className="mx-2 hover:text-indigo-600 text-slate-500">Banking Fraud</Link> •
-        <Link href="/investment-scams" className="mx-2 hover:text-indigo-600 text-slate-500">Investment Scams</Link> •
-        <Link href="/whatsapp-scams" className="mx-2 hover:text-indigo-600 text-slate-500">WhatsApp Scams</Link> •
-        <Link href="/phone-number-scams" className="mx-2 hover:text-indigo-600 text-slate-500">Phone Number Scams</Link> •
-        <Link href="/medical-aid-fraud-south-africa" className="mx-2 hover:text-indigo-600 text-slate-500">Medical Aid Fraud</Link> •
-        <Link href="/scam-psychology" className="mx-2 hover:text-indigo-600 text-slate-500">Scam Psychology</Link>
       </div>
     </main>
   );
