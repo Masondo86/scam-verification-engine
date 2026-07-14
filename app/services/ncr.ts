@@ -1,13 +1,28 @@
 
-// app/services/ncr.ts
+// app/services/ncrregistration.ts
+
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number = 5000): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+}
 
 export async function checkNCRRegistration(businessName: string): Promise<{ registered: boolean; details?: string }> {
   try {
     const searchUrl = `https://www.ncr.org.za/registrants?keyword=${encodeURIComponent(businessName)}`;
-    const response = await fetch(searchUrl, {
+    const response = await fetchWithTimeout(searchUrl, {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TheLinkDigital/1.0)' },
-      signal: AbortSignal.timeout(5000),
-    });
+    }, 5000);
 
     if (!response.ok) {
       console.warn(`[NCR] Search failed: ${response.status}`);

@@ -6,6 +6,22 @@ import { PLATFORMS, Platform } from '@/app/lib/trust-signals/presence-platforms'
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 const cache = new Map<string, { timestamp: number; signals: PresenceSignal[] }>();
 
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number = 3000): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+}
+
 /**
  * Check a username across all (or a subset of) platforms.
  */

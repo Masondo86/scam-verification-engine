@@ -5,11 +5,28 @@ export interface AbstractEmailResult {
   isDisposable: boolean;
   isFreeProvider: boolean;
   deliverability: 'DELIVERABLE' | 'RISKY' | 'UNDELIVERABLE' | 'UNKNOWN';
-  qualityScore: number; // 0-1
+  qualityScore: number;
   isSMTPValid: boolean;
   isMXFound: boolean;
-  riskScore: number; // 0-100 derived from quality and validity
+  riskScore: number;
   reasons: string[];
+}
+
+// Helper to fetch with timeout
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number = 5000): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
 }
 
 export async function getAbstractEmailReputation(email: string): Promise<AbstractEmailResult | null> {
@@ -22,11 +39,10 @@ export async function getAbstractEmailReputation(email: string): Promise<Abstrac
   const url = `https://emailvalidation.abstractapi.com/v1/?api_key=${apiKey}&email=${encodeURIComponent(email)}`;
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
-      signal: AbortSignal.timeout(5000),
-    });
+    }, 5000);
 
     if (!response.ok) {
       console.error(`[ABSTRACT-EMAIL] HTTP error ${response.status}`);
@@ -37,8 +53,6 @@ export async function getAbstractEmailReputation(email: string): Promise<Abstrac
     console.log('[ABSTRACT-EMAIL] Response:', JSON.stringify(data, null, 2));
 
     const reasons: string[] = [];
-
-    // Validity check
     const isValid = data.is_valid_format?.value === true;
     if (!isValid) {
       reasons.push(`Abstract: Invalid email format (${data.is_valid_format?.text || 'unknown reason'})`);
@@ -46,39 +60,21 @@ export async function getAbstractEmailReputation(email: string): Promise<Abstrac
       reasons.push('Abstract: Email format is valid');
     }
 
-    // Disposable detection
     const isDisposable = data.is_disposable_email?.value === true;
-    if (isDisposable) {
-      reasons.push('Abstract: Disposable email address detected');
-    }
+    if (isDisposable) reasons.push('Abstract: Disposable email address detected');
 
-    // Free provider
     const isFreeProvider = data.is_free_provider?.value === true;
-    if (isFreeProvider) {
-      reasons.push('Abstract: Free email provider (e.g., Gmail, Yahoo)');
-    }
+    if (isFreeProvider) reasons.push('Abstract: Free email provider (e.g., Gmail, Yahoo)');
 
-    // Deliverability
     const deliverability = data.deliverability || 'UNKNOWN';
-    if (deliverability === 'DELIVERABLE') {
-      reasons.push('Abstract: Email is deliverable');
-    } else if (deliverability === 'RISKY') {
-      reasons.push('Abstract: Risky deliverability – may bounce');
-    } else if (deliverability === 'UNDELIVERABLE') {
-      reasons.push('Abstract: Email is undeliverable');
-    }
+    if (deliverability === 'DELIVERABLE') reasons.push('Abstract: Email is deliverable');
+    else if (deliverability === 'RISKY') reasons.push('Abstract: Risky deliverability – may bounce');
+    else if (deliverability === 'UNDELIVERABLE') reasons.push('Abstract: Email is undeliverable');
 
-    // SMTP and MX
-    const isSMTPValid = data.is_smtp_valid?.value === true || false;
     const isMXFound = data.is_mx_found?.value === true || false;
-    if (!isMXFound) {
-      reasons.push('Abstract: No MX records found – domain may not accept email');
-    }
+    if (!isMXFound) reasons.push('Abstract: No MX records found – domain may not accept email');
 
-    // Quality score (0-1)
     const qualityScore = data.quality_score || 0;
-
-    // Convert to risk score (0-100, higher = more risky)
     let riskScore = 0;
     if (!isValid) riskScore += 40;
     if (isDisposable) riskScore += 25;
@@ -92,7 +88,7 @@ export async function getAbstractEmailReputation(email: string): Promise<Abstrac
       isFreeProvider,
       deliverability: deliverability as 'DELIVERABLE' | 'RISKY' | 'UNDELIVERABLE' | 'UNKNOWN',
       qualityScore,
-      isSMTPValid,
+      isSMTPValid: data.is_smtp_valid?.value === true || false,
       isMXFound,
       riskScore,
       reasons,

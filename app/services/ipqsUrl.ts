@@ -1,5 +1,4 @@
 // app/services/ipqsUrl.ts
-import { getCached, setCached } from '@/app/lib/cache';
 
 export interface IPQSURLResult {
   success: boolean;
@@ -8,11 +7,23 @@ export interface IPQSURLResult {
   raw?: any;
 }
 
-export async function getIPQSURLReputation(url: string): Promise<IPQSURLResult | null> {
-  const cacheKey = `url:${url}`;
-  const cached = getCached<IPQSURLResult>(cacheKey);
-  if (cached) return cached;
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number = 5000): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+}
 
+export async function getIPQSURLReputation(url: string): Promise<IPQSURLResult | null> {
   const apiKey = process.env.IPQS_API_KEY;
   if (!apiKey) {
     console.error('[IPQS-URL] API key missing');
@@ -23,11 +34,10 @@ export async function getIPQSURLReputation(url: string): Promise<IPQSURLResult |
   const requestUrl = `https://ipqualityscore.com/api/json/url/${apiKey}/${encodedUrl}`;
 
   try {
-    const response = await fetch(requestUrl, {
+    const response = await fetchWithTimeout(requestUrl, {
       method: 'GET',
       headers: { Accept: 'application/json' },
-      signal: AbortSignal.timeout(5000),
-    });
+    }, 5000);
 
     if (!response.ok) {
       console.error(`[IPQS-URL] HTTP error ${response.status}`);
@@ -35,9 +45,6 @@ export async function getIPQSURLReputation(url: string): Promise<IPQSURLResult |
     }
 
     const data = await response.json();
-    
-    // [DEBUG] Log raw IPQS response
-    console.log(`[IPQS-URL] Raw API response for ${url}:`, JSON.stringify(data, null, 2));
 
     let riskScore = data.risk_score ?? data.fraud_score ?? 0;
     riskScore = Math.min(100, Math.max(0, riskScore));
@@ -56,18 +63,12 @@ export async function getIPQSURLReputation(url: string): Promise<IPQSURLResult |
     if (data.parking) reasons.push('This domain is parked and not actively used');
     if (data.risk_score === 100) reasons.push('Confirmed malicious – do NOT proceed');
 
-    const result = { success: true, riskScore, reasons, raw: data };
-    
-    // [DEBUG] Log processed result
-    console.log(`[IPQS-URL] Processed result:`, {
-      url,
+    return {
+      success: true,
       riskScore,
       reasons,
-      cacheKey
-    });
-    
-    setCached(cacheKey, result, 86400);
-    return result;
+      raw: data,
+    };
   } catch (err) {
     console.error('[IPQS-URL] Request failed:', err);
     return null;

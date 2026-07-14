@@ -1,7 +1,25 @@
 // app/services/trust-signals/news.ts
 
+import { XMLParser } from 'fast-xml-parser';
 import { NewsSignal, NewsResponse } from '@/app/lib/trust-signals/types';
 import { NEWS_SOURCES } from '@/app/lib/trust-signals/news-sources';
+
+// Helper to fetch with timeout
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number = 5000): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+}
 
 // Keyword lists for sentiment (v1)
 const NEGATIVE_KEYWORDS = [
@@ -40,16 +58,16 @@ function categoriseArticle(text: string): string | undefined {
 }
 
 export async function fetchNews(query: string, limit: number = 20): Promise<NewsResponse> {
+  // Use the first source (Google News)
   const source = NEWS_SOURCES[0];
   const url = source.fetchUrl(query, limit);
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; TheLinkDigital/1.0)',
       },
-      signal: AbortSignal.timeout(8000),
-    });
+    }, 8000);
 
     if (!response.ok) {
       throw new Error(`HTTP error ${response.status}`);
@@ -58,6 +76,7 @@ export async function fetchNews(query: string, limit: number = 20): Promise<News
     const xml = await response.text();
     const rawSignals = await source.parseResponse(xml);
 
+    // Classify each article with sentiment and category
     const classifiedSignals: NewsSignal[] = rawSignals.slice(0, limit).map((signal) => {
       const fullText = `${signal.title} ${signal.url}`;
       const sentiment = classifySentiment(fullText);

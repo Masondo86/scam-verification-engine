@@ -8,6 +8,19 @@ export interface SearchResult {
   sentiment: 'positive' | 'neutral' | 'negative';
 }
 
+async function fetchWithTimeout(url: string, timeoutMs: number = 5000): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+}
+
 /**
  * Query Google Custom Search API for a given term.
  * Returns up to 10 results with sentiment classification.
@@ -24,7 +37,7 @@ export async function searchWeb(query: string): Promise<SearchResult[]> {
   const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(query)}&num=10`;
 
   try {
-    const response = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    const response = await fetchWithTimeout(url, 5000);
     if (!response.ok) {
       console.error(`[Search] HTTP error ${response.status}`);
       return [];

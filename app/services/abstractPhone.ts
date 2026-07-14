@@ -7,8 +7,24 @@ export interface AbstractPhoneResult {
   countryCode?: string;
   countryName?: string;
   location?: string;
-  riskScore: number;   // 0-100 derived from validity and type
+  riskScore: number;
   reasons: string[];
+}
+
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number = 5000): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
 }
 
 export async function getAbstractPhoneReputation(phoneNumber: string): Promise<AbstractPhoneResult | null> {
@@ -19,18 +35,15 @@ export async function getAbstractPhoneReputation(phoneNumber: string): Promise<A
   }
 
   const normalized = phoneNumber.replace(/\s+/g, '').replace(/[^0-9+]/g, '');
-  if (!normalized) {
-    return null;
-  }
+  if (!normalized) return null;
 
   const url = `https://phonevalidation.abstractapi.com/v1/?api_key=${apiKey}&phone=${encodeURIComponent(normalized)}`;
 
   try {
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
-      signal: AbortSignal.timeout(5000),
-    });
+    }, 5000);
 
     if (!response.ok) {
       console.error(`[ABSTRACT-PHONE] HTTP error ${response.status}`);

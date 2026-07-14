@@ -13,6 +13,8 @@ import { fetchNews } from '@/app/services/trust-signals/news';
 import { searchWeb } from '@/app/services/trust-signals/search';
 import { classifyScam } from '@/app/lib/scam-classifier';
 
+export const dynamic = 'force-dynamic';
+
 type AnalyzeType = 'message' | 'url' | 'phone' | 'claim' | 'email' | 'business';
 
 type AnalyzeResponse = {
@@ -25,40 +27,19 @@ type AnalyzeResponse = {
 
 // ─── Flags and constants ────────────────────────────────────────────────
 const MESSAGE_FLAGS = [
-  // Urgency & pressure
   'urgent', 'immediately', 'asap', 'now', 'action required', 'within 24 hours',
-  'today', 'as soon as possible', 'do not delay', 'time sensitive',
-  // Fear & threats
   'suspended', 'locked', 'closed', 'terminated', 'compromised', 'unauthorized',
-  'deactivated', 'restricted', 'pending closure', 'will be lost',
-  // Authority impersonation
   'bank', 'sars', 'government', 'official', 'department', 'unit', 'agency',
-  'inspection', 'fraud department', 'security team', 'head officer', 'executive',
-  'commissioner', 'director', 'compliance', 'regulatory', 'authority',
-  // Consignment / parcel / shipping
   'consignment', 'parcel', 'courier', 'delivery', 'unclaimed', 'package',
-  'shipping', 'cargo', 'freight', 'tracking number', 'shipment',
-  // Personal info requests
   'full name', 'address', 'phone number', 'email address', 'confirm your',
   'verify your account', 'update your details', 'provide your',
-  'send your', 'reply with', 'confirm your identity',
-  // Financial triggers
   'million', 'cash', 'wire transfer', 'bank account', 'inheritance', 'lottery',
-  'prize', 'winnings', 'refund', 'tax refund', 'beneficiary', 'next of kin',
-  'compensation', 'payout', 'reward', 'grant', 'relief fund',
-  // Generic scam phrases
   'unexpected', 'windfall', 'guaranteed', 'risk-free', 'no risk',
   'opportunity', 'investment', 'profit', 'returns',
 ];
 
 const KNOWN_SCAM_NUMBERS = ['+27721234567', '0721234567', '+27831234567'];
 const SUPPORTED_TYPES: AnalyzeType[] = ['message', 'url', 'phone', 'claim', 'email', 'business'];
-
-// ─── Supabase client ─────────────────────────────────────────────────────
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
-);
 
 // ─── Helper functions ──────────────────────────────────────────────────
 function extractUrls(text: string): string[] {
@@ -100,14 +81,30 @@ async function getSpamReportCount(type: string, content: string): Promise<number
   return count || 0;
 }
 
-// ─── FSCA & NCR registration checks (inline) ──────────────────────────
+// ─── fetchWithTimeout helper ──────────────────────────────────────────
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number = 5000): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+}
+
+// ─── FSCA & NCR registration checks ──────────────────────────────────
 async function checkFSCARegistration(businessName: string): Promise<{ registered: boolean; details?: string }> {
   try {
     const searchUrl = `https://www.fsca.co.za/Search/FSP?query=${encodeURIComponent(businessName)}`;
-    const response = await fetch(searchUrl, {
+    const response = await fetchWithTimeout(searchUrl, {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TheLinkDigital/1.0)' },
-      signal: AbortSignal.timeout(5000),
-    });
+    }, 5000);
 
     if (!response.ok) {
       console.warn(`[FSCA] Search failed: ${response.status}`);
@@ -135,10 +132,9 @@ async function checkFSCARegistration(businessName: string): Promise<{ registered
 async function checkNCRRegistration(businessName: string): Promise<{ registered: boolean; details?: string }> {
   try {
     const searchUrl = `https://www.ncr.org.za/registrants?keyword=${encodeURIComponent(businessName)}`;
-    const response = await fetch(searchUrl, {
+    const response = await fetchWithTimeout(searchUrl, {
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TheLinkDigital/1.0)' },
-      signal: AbortSignal.timeout(5000),
-    });
+    }, 5000);
 
     if (!response.ok) {
       console.warn(`[NCR] Search failed: ${response.status}`);
@@ -296,7 +292,7 @@ async function evaluatePhone(content: string): Promise<AnalyzeResponse> {
     };
   }
 
-  // ✅ Abstract Phone Reputation (replaces SEON)
+  // ✅ Abstract Phone Reputation
   console.log(`[ABSTRACT-PHONE] Checking phone: ${phone}`);
   const abstractData = await getAbstractPhoneReputation(phone);
 
@@ -321,7 +317,7 @@ async function evaluateEmail(content: string): Promise<AnalyzeResponse> {
     recommendation: 'Proceed with caution. Verify sender independently.',
   };
 
-  // ✅ Abstract Email Reputation (replaces SEON)
+  // ✅ Abstract Email Reputation
   console.log(`[ABSTRACT-EMAIL] Checking email: ${content}`);
   const abstractData = await getAbstractEmailReputation(content);
 
@@ -528,6 +524,15 @@ export async function POST(req: Request) {
     const category = classifyScam(content);
 
     void (async () => {
+      const supabaseUrl = process.env.SUPABASE_URL;
+      const supabaseKey = process.env.SUPABASE_ANON_KEY;
+
+      if (!supabaseUrl || !supabaseKey) {
+        console.error('[Analyze] Missing Supabase credentials for logging');
+        return;
+      }
+
+      const supabase = createClient(supabaseUrl, supabaseKey);
       const { error: insertError } = await supabase.from('scan_events').insert({
         input_text: content,
         urls_detected: urls,

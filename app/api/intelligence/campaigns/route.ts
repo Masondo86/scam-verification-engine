@@ -2,6 +2,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   // Lazy initialization: create client only inside the handler
   const supabaseUrl = process.env.SUPABASE_URL;
