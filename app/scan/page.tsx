@@ -1,5 +1,6 @@
 'use client';
 
+import DataLeakModal from '@/components/DataLeakModal';
 import { useState, useEffect } from 'react';
 import LiveStats from '@/components/LiveStats';
 import type { AnalyzeResponse, ScanType } from '@/app/lib/types';
@@ -67,6 +68,8 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
   const [analyzedInput, setAnalyzedInput] = useState<{ original: string; type: ScanType; extracted: string } | null>(null);
   const [scanCount, setScanCount] = useState<number | null>(null);
+  const [showDataLeakModal, setShowDataLeakModal] = useState(false);
+  const [scanType, setScanType] = useState('SMS');
 
   // Fetch scan count on load
   useEffect(() => {
@@ -108,6 +111,17 @@ export default function Page() {
 
       const result = await res.json();
       setData(result);
+
+      const normalizedType = detection.type === 'email'
+        ? 'email'
+        : detection.type === 'url'
+        ? 'URL'
+        : detection.type === 'phone'
+        ? 'phone'
+        : 'SMS';
+
+      setScanType(normalizedType);
+      setShowDataLeakModal(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -533,6 +547,14 @@ export default function Page() {
               </div>
             </section>
           </>
+        )}
+
+        {data && showDataLeakModal && (
+          <DataLeakModal
+            isOpen={showDataLeakModal}
+            onClose={() => setShowDataLeakModal(false)}
+            scanType={scanType}
+          />
         )}
       </div>
     </main>
