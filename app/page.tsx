@@ -512,12 +512,12 @@ export default function HomePage() {
                   <p className="text-sm text-slate-600">Social presence, news, reputation</p>
                 </div>
               </div>
-              <button
-                onClick={() => alert('Waitlist feature coming soon!')}
-                className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded-xl font-semibold shadow-lg shadow-amber-200 transition-all hover:scale-105"
-              >
-                Join Waitlist
-              </button>
+              <Link
+  href="/waitlist"
+  className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded-xl font-semibold shadow-lg shadow-amber-200 transition-all hover:scale-105 inline-block"
+>
+  Join Waitlist
+</Link>
               <p className="text-sm text-slate-500 mt-4">
                 Be the first to access your complete digital trust profile.
               </p>
