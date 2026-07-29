@@ -96,10 +96,42 @@ const masterFaqSchema = {
   ],
 };
 
+const webAppSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Free Scam Checker South Africa',
+  url: 'https://checkascam.co.za',
+  applicationCategory: 'SecurityApplication',
+  operatingSystem: 'All',
+  description: 'Free public scam verification for websites, phone numbers, emails and messages in South Africa.',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'ZAR',
+  },
+};
+
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'The Link Digital Security',
+  url: 'https://checkascam.co.za',
+  address: {
+    '@type': 'PostalAddress',
+    addressCountry: 'ZA',
+  },
+  contactPoint: {
+    '@type': 'ContactPoint',
+    email: 'admin@checkascam.co.za',
+    contactType: 'customer support',
+    availableLanguage: ['English'],
+  },
+};
+
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-white">
-      {/* HERO SECTION */}
+      {/* HERO SECTION - SaaS White Background */}
       <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-purple-50">
         <div className="max-w-7xl mx-auto px-4 py-24 sm:py-32">
           <div className="text-center max-w-4xl mx-auto">
@@ -111,6 +143,7 @@ export default function HomePage() {
               Trusted by South Africans
             </div>
 
+            {/* Main headline */}
             <h1 className="text-5xl sm:text-7xl font-bold mb-6 leading-tight text-slate-900">
               Verify Scams<br />
               <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
@@ -118,11 +151,13 @@ export default function HomePage() {
               </span>
             </h1>
 
+            {/* Subheadline */}
             <p className="text-xl sm:text-2xl text-slate-600 mb-8 max-w-3xl mx-auto leading-relaxed">
               Free scam verification for URLs, phone numbers, emails, and messages. 
               Powered by real-time security intelligence.
             </p>
 
+            {/* CTA buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Link 
                 href="/scan"
@@ -141,8 +176,10 @@ export default function HomePage() {
               </Link>
             </div>
 
+            {/* Live Stats */}
             <LiveStats />
 
+            {/* Social proof stats */}
             <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto pt-8 border-t border-slate-200">
               <div>
                 <div className="text-3xl font-bold text-indigo-600 mb-1">100%</div>
@@ -161,7 +198,71 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FEATURES SECTION */}
+      {/* THREE PILLARS: Scam Engine · Digital Footprint · Trust Profile */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">
+              Your Complete Security Suite
+            </h2>
+            <p className="text-xl text-slate-600">
+              Three powerful tools – one unified defence against digital threats
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Card 1: Scam Verification Engine */}
+            <div className="bg-gradient-to-br from-indigo-50 to-white rounded-2xl shadow-lg p-8 border border-indigo-100 hover:shadow-xl transition-all">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-4">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">Scam Verification Engine</h3>
+              <p className="text-slate-600 mb-4">
+                Real‑time analysis of URLs, phone numbers, emails and messages using global threat intelligence.
+              </p>
+              <Link href="/scan" className="inline-flex items-center text-indigo-600 font-semibold hover:text-indigo-800">
+                Try it now →
+              </Link>
+            </div>
+
+            {/* Card 2: Digital Footprint Scanner */}
+            <div className="bg-gradient-to-br from-purple-50 to-white rounded-2xl shadow-lg p-8 border border-purple-100 hover:shadow-xl transition-all">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mb-4">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">Digital Footprint Scanner</h3>
+              <p className="text-slate-600 mb-4">
+                Analyse domain age, ownership, social presence, news mentions and breach exposure – all in one report.
+              </p>
+              <Link href="/digital-footprint" className="inline-flex items-center text-purple-600 font-semibold hover:text-purple-800">
+                Scan your footprint →
+              </Link>
+            </div>
+
+            {/* Card 3: Digital Trust Profile */}
+            <div className="bg-gradient-to-br from-pink-50 to-white rounded-2xl shadow-lg p-8 border border-pink-100 hover:shadow-xl transition-all">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center mb-4">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">Digital Trust Profile</h3>
+              <p className="text-slate-600 mb-4">
+                Your unified risk dashboard – combining scam exposure, footprint data and trust signals into one clear score.
+              </p>
+              <Link href="/trust-profile" className="inline-flex items-center text-pink-600 font-semibold hover:text-pink-800">
+                View your profile →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURES SECTION - Original content restored */}
       <section className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
@@ -174,44 +275,377 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Feature cards – keep your existing content here */} 
-            {/* ... (your existing cards) ... */}
+            <div className="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition-shadow border border-slate-100">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Instant Analysis</h3>
+              <p className="text-slate-600">
+                Real-time verification using Google Safe Browsing, AbuseIPDB, and WHOIS databases
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition-shadow border border-slate-100">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">SA Bank Protection</h3>
+              <p className="text-slate-600">
+                Specialized detection for FNB, Capitec, ABSA, Nedbank, and Standard Bank impersonation
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition-shadow border border-slate-100">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Privacy First</h3>
+              <p className="text-slate-600">
+                No data storage, no tracking, no signup required. Your privacy is guaranteed
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition-shadow border border-slate-100">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mb-4">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Digital Trust Signals</h3>
+              <p className="text-slate-600">
+                Social presence, news mentions, and web reputation – aggregated into your risk score.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
+      {/* HOW IT WORKS - Original content restored */}
       <section id="how-it-works" className="py-24">
-        {/* ... your existing how-it-works content ... */}
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">
+              How It Works
+            </h2>
+            <p className="text-xl text-slate-600">
+              Get verified results in three simple steps
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-8">
+            <div className="relative">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-2xl font-bold text-white shadow-md">
+                  1
+                </div>
+                <h3 className="font-bold text-slate-900 mb-2">Enter Details</h3>
+                <p className="text-slate-600 text-sm">
+                  Paste URL, phone number, email, or suspicious message
+                </p>
+              </div>
+              <div className="hidden md:block absolute top-8 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-purple-300 to-transparent" />
+            </div>
+
+            <div className="relative">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-2xl font-bold text-white shadow-md">
+                  2
+                </div>
+                <h3 className="font-bold text-slate-900 mb-2">AI Analysis</h3>
+                <p className="text-slate-600 text-sm">
+                  Multiple security databases checked in real-time
+                </p>
+              </div>
+              <div className="hidden md:block absolute top-8 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-pink-300 to-transparent" />
+            </div>
+
+            <div className="relative">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center text-2xl font-bold text-white shadow-md">
+                  3
+                </div>
+                <h3 className="font-bold text-slate-900 mb-2">Get Results</h3>
+                <p className="text-slate-600 text-sm">
+                  Detailed risk score with clear explanation
+                </p>
+              </div>
+              <div className="hidden md:block absolute top-8 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-rose-300 to-transparent" />
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-rose-500 to-orange-600 flex items-center justify-center text-2xl font-bold text-white shadow-md">
+                4
+              </div>
+              <h3 className="font-bold text-slate-900 mb-2">Stay Safe</h3>
+              <p className="text-slate-600 text-sm">
+                Follow recommended actions to protect yourself
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* LEARN ABOUT SCAMS */}
+      {/* LEARN ABOUT SCAMS - Original content restored */}
       <section className="py-24 bg-slate-50">
-        {/* ... your existing educational cards ... */}
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">
+              Learn About Scams
+            </h2>
+            <p className="text-xl text-slate-600">
+              Knowledge is your best defense against fraud
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+            <Link href="/how-scams-work" className="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition-all group border border-slate-100">
+              <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">🎯</div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-3">How Scams Work</h3>
+              <p className="text-slate-600 mb-4">
+                Understand the psychology and tactics fraudsters use to manipulate victims
+              </p>
+              <div className="text-indigo-600 font-semibold flex items-center gap-2">
+                Read More
+                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
+
+            <Link href="/whatsapp-scams" className="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition-all group border border-slate-100">
+              <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">💬</div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-3">WhatsApp Scams</h3>
+              <p className="text-slate-600 mb-4">
+                Top 10 WhatsApp scams targeting South Africans and how to spot them
+              </p>
+              <div className="text-indigo-600 font-semibold flex items-center gap-2">
+                Read More
+                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
+
+            <Link href="/banking-fraud-south-africa" className="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition-all group border border-slate-100">
+              <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">🏦</div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-3">Banking Fraud</h3>
+              <p className="text-slate-600 mb-4">
+                Recognize bank impersonation tactics and access official security resources
+              </p>
+              <div className="text-indigo-600 font-semibold flex items-center gap-2">
+                Read More
+                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
+
+            <Link href="/digital-footprint-hub" className="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition-all group border border-slate-100">
+              <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">🧭</div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-3">Digital Footprint</h3>
+              <p className="text-slate-600 mb-4">
+                Explore how online signals, domain history and presence affect trust and risk
+              </p>
+              <div className="text-indigo-600 font-semibold flex items-center gap-2">
+                Learn More
+                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
+          </div>
+
+          <div className="max-w-md mx-auto">
+            <Link href="/payday-loan-scams" className="bg-white rounded-2xl shadow-md p-8 hover:shadow-xl transition-all group border border-slate-100 block">
+              <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">💰</div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-3">Payday Loan Scams</h3>
+              <p className="text-slate-600 mb-4">
+                Learn how payday loan scams work and how to protect yourself from predatory lending schemes
+              </p>
+              <div className="text-indigo-600 font-semibold flex items-center gap-2">
+                Read More
+                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </Link>
+          </div>
+        </div>
       </section>
 
-      {/* DIGITAL TRUST PROFILE CARD (CLIENT COMPONENT) */}
-      <DigitalTrustProfileCard />
-
-      {/* PREMIUM TEASER */}
+      {/* DIGITAL TRUST PROFILE SECTION - Original content restored */}
       <section className="py-24">
-        {/* ... your existing premium teaser ... */}
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl shadow-xl p-12 text-center border border-amber-200 relative overflow-hidden">
+            <div className="absolute top-0 right-0 -mt-6 -mr-6 w-24 h-24 bg-amber-200 rounded-full opacity-20"></div>
+            <div className="absolute bottom-0 left-0 -mb-6 -ml-6 w-24 h-24 bg-orange-200 rounded-full opacity-20"></div>
+            <div className="relative">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 text-amber-700 text-sm font-semibold mb-6">
+                🚀 Coming Soon
+              </div>
+              <h2 className="text-4xl font-bold text-slate-900 mb-4">
+                Digital Trust Profile
+              </h2>
+              <p className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto">
+                Your unified digital risk dashboard – combining scam exposure, digital footprint, and trust signals into one clear profile.
+              </p>
+              <div className="grid md:grid-cols-3 gap-4 mb-8 text-left">
+                <div className="bg-white/70 backdrop-blur p-4 rounded-xl border border-amber-100">
+                  <div className="text-2xl mb-2">🛡️</div>
+                  <h4 className="font-bold text-slate-900">Scam Exposure</h4>
+                  <p className="text-sm text-slate-600">Your high-risk scan history</p>
+                </div>
+                <div className="bg-white/70 backdrop-blur p-4 rounded-xl border border-amber-100">
+                  <div className="text-2xl mb-2">🔍</div>
+                  <h4 className="font-bold text-slate-900">Digital Footprint</h4>
+                  <p className="text-sm text-slate-600">Breaches, phone risk, device score</p>
+                </div>
+                <div className="bg-white/70 backdrop-blur p-4 rounded-xl border border-amber-100">
+                  <div className="text-2xl mb-2">🌐</div>
+                  <h4 className="font-bold text-slate-900">Trust Signals</h4>
+                  <p className="text-sm text-slate-600">Social presence, news, reputation</p>
+                </div>
+              </div>
+              <button
+                onClick={() => alert('Waitlist feature coming soon!')}
+                className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded-xl font-semibold shadow-lg shadow-amber-200 transition-all hover:scale-105"
+              >
+                Join Waitlist
+              </button>
+              <p className="text-sm text-slate-500 mt-4">
+                Be the first to access your complete digital trust profile.
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* FINAL CTA */}
+      {/* PREMIUM TEASER - Original content restored */}
+      <section className="py-24">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl shadow-xl p-12 text-center border border-indigo-100">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 text-sm mb-6">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+              </svg>
+              Premium Services
+            </div>
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">
+              Complete Digital Protection
+            </h2>
+            <p className="text-slate-600 mb-8 text-lg">
+              Go beyond scam checking with comprehensive identity monitoring
+            </p>
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
+              <div className="p-6 bg-white rounded-xl shadow-sm border border-indigo-100 text-left">
+                <div className="text-sm text-emerald-600 font-bold mb-2">INSTANT</div>
+                <div className="text-2xl font-bold text-slate-900 mb-2">R29</div>
+                <div className="text-indigo-600 font-semibold mb-3">Email Scan</div>
+                <p className="text-slate-600 text-sm">Check if your email appears in data breaches</p>
+              </div>
+              <div className="p-6 bg-white rounded-xl shadow-sm border border-purple-100 text-left">
+                <div className="text-sm text-purple-600 font-bold mb-2">FULL PROFILE</div>
+                <div className="text-2xl font-bold text-slate-900 mb-2">R59</div>
+                <div className="text-purple-600 font-semibold mb-3">Identity Scan</div>
+                <p className="text-slate-600 text-sm">Email + ID + Phone - comprehensive dark web scan</p>
+              </div>
+            </div>
+            <div className="text-sm text-slate-500">
+              🏠 Smart Home Network Agent - Coming Soon
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FINAL CTA - Original content restored */}
       <section className="py-24 bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-        {/* ... your existing final CTA ... */}
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <h2 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-6">
+            Protect Yourself Today
+          </h2>
+          <p className="text-xl text-slate-600 mb-8">
+            Join thousands of South Africans staying safe from scams
+          </p>
+          <Link 
+            href="/scan"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-semibold text-white text-lg shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all hover:scale-105"
+          >
+            Start Free Scan
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </Link>
+          <p className="text-slate-500 text-sm mt-4">
+            No registration • 100% free • Powered by The Link Digital Security
+          </p>
+        </div>
       </section>
 
-      {/* FOOTER */}
+      {/* FOOTER - Original content restored */}
       <footer className="border-t border-slate-200 py-12 bg-white">
-        {/* ... your existing footer ... */}
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <h3 className="font-bold text-slate-900 mb-4">Product</h3>
+              <ul className="space-y-2 text-sm">
+                <li><Link href="/scan" className="text-slate-600 hover:text-indigo-600 transition-colors">Free Scam Scanner</Link></li>
+                <li><span className="text-slate-400">Email Scan (R29)</span></li>
+                <li><span className="text-slate-400">Identity Scan (R59)</span></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-900 mb-4">Learn</h3>
+              <ul className="space-y-2 text-sm">
+                <li><Link href="/how-scams-work" className="text-slate-600 hover:text-indigo-600 transition-colors">How Scams Work</Link></li>
+                <li><Link href="/phone-number-check-south-africa" className="text-slate-600 hover:text-indigo-600 transition-colors">Check Phone Number South Africa</Link></li>
+                <li><Link href="/medical-aid-fraud-south-africa" className="text-slate-600 hover:text-indigo-600 transition-colors">Medical Aid Fraud & Phishing</Link></li>
+                <li><Link href="/whatsapp-scams" className="text-slate-600 hover:text-indigo-600 transition-colors">WhatsApp Scams</Link></li>
+                <li><Link href="/banking-fraud-south-africa" className="text-slate-600 hover:text-indigo-600 transition-colors">Banking Fraud</Link></li>
+                <li><Link href="/payday-loan-scams" className="text-slate-600 hover:text-indigo-600 transition-colors">Payday Loan Scams</Link></li>
+                <li><Link href="/digital-footprint-hub" className="text-slate-600 hover:text-indigo-600 transition-colors">Digital Footprint</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-900 mb-4">Company</h3>
+              <ul className="space-y-2 text-sm">
+                <li><span className="text-slate-400">About Us</span></li>
+                <li><a href="mailto:admin@checkascam.co.za" className="text-slate-600 hover:text-indigo-600 transition-colors">Contact Us</a></li>
+                <li><Link href="/privacy-policy" className="text-slate-600 hover:text-indigo-600 transition-colors">Privacy Policy</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-900 mb-4">Connect</h3>
+              <ul className="space-y-2 text-sm">
+                <li><span className="text-slate-400">Twitter</span></li>
+                <li><span className="text-slate-400">LinkedIn</span></li>
+                <li><span className="text-slate-400">Facebook</span></li>
+              </ul>
+            </div>
+          </div>
+          <div className="pt-8 border-t border-slate-200 text-center text-slate-500 text-sm">
+            <p>&copy; 2026 The Link Digital Security. Protecting South Africans from digital threats.</p>
+          </div>
+        </div>
       </footer>
 
-      {/* FAQ Schema */}
+            {/* FAQ Schema */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(masterFaqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
     </main>
   );
