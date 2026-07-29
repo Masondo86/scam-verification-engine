@@ -69,7 +69,31 @@ const nextConfig = {
   /**
    * Prevent leaking source maps in production
    */
-  productionBrowserSourceMaps: false
+  productionBrowserSourceMaps: false,
+
+  /**
+   * REWRITES – route /digital-footprint and /trust-profile to the other Vercel apps
+   */
+  async rewrites() {
+    return [
+      {
+        source: '/digital-footprint',
+        destination: 'https://digital-footprint-scanner.vercel.app/',
+      },
+      {
+        source: '/digital-footprint/:path*',
+        destination: 'https://digital-footprint-scanner.vercel.app/:path*',
+      },
+      {
+        source: '/trust-profile',
+        destination: 'https://digital-footprint-scanner.vercel.app/:path*',
+      },
+      {
+        source: '/trust-profile/:path*',
+        destination: 'https://digital-footprint-scanner.vercel.app/:path*',
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
