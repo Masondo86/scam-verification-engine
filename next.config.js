@@ -86,14 +86,14 @@ const nextConfig = {
       },
       {
         source: '/trust-profile',
-        destination: 'https://digital-footprint-scanner.vercel.app/:path*',
+        destination: 'https://digital-trust-profile-9fz3jv02r-linda-masondos-projects.vercel.app/',
       },
       {
         source: '/trust-profile/:path*',
-        destination: 'https://digital-footprint-scanner.vercel.app/:path*',
+        destination: 'https://digital-trust-profile-9fz3jv02r-linda-masondos-projects.vercel.app/:path*',
       },
     ];
-  },
-};
+  }
+}; // <-- This closing brace was missing!
 
 module.exports = nextConfig;
