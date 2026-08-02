@@ -92,6 +92,10 @@ const nextConfig = {
         source: '/trust-profile/:path*',
         destination: 'https://digital-trust-profile-9fz3jv02r-linda-masondos-projects.vercel.app/:path*',
       },
+      {
+  source: '/test-rewrite',
+  destination: 'https://google.com',
+}
     ];
   }
 }; // <-- This closing brace was missing!
