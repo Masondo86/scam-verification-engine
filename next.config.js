@@ -38,7 +38,6 @@ const nextConfig = {
 
   /**
    * Allow only required remote image domains
-   * (Bank logos, screenshots, etc.)
    */
   images: {
     remotePatterns: [
@@ -51,7 +50,6 @@ const nextConfig = {
 
   /**
    * ESLint & TypeScript handled during CI
-   * Build should fail on type errors (important)
    */
   eslint: {
     ignoreDuringBuilds: false
@@ -75,26 +73,26 @@ const nextConfig = {
    * REWRITES – route /digital-footprint and /trust-profile to the other Vercel apps
    */
   async rewrites() {
-  return [
-    {
-      source: '/digital-footprint',
-      destination: 'https://digital-footprint-scanner.vercel.app/',
-    },
-    {
-      source: '/digital-footprint/:path*',
-      destination: 'https://digital-footprint-scanner.vercel.app/:path*',
-    },
-    {
-      source: '/trust-profile',
-      destination: 'https://digital-trust-profile.vercel.app/',   // 👈 new URL
-    },
-    {
-      source: '/trust-profile/:path*',
-      destination: 'https://digital-trust-profile.vercel.app/:path*',
-    },
-    {
-      source: '/test-rewrite',
-      destination: 'https://google.com',
-    }
-  ];
-}
+    return [
+      {
+        source: '/digital-footprint',
+        destination: 'https://digital-footprint-scanner.vercel.app/',
+      },
+      {
+        source: '/digital-footprint/:path*',
+        destination: 'https://digital-footprint-scanner.vercel.app/:path*',
+      },
+      {
+        source: '/trust-profile',
+        destination: 'https://digital-trust-profile.vercel.app/',
+      },
+      {
+        source: '/trust-profile/:path*',
+        destination: 'https://digital-trust-profile.vercel.app/:path*',
+      },
+      // Remove test-rewrite now that rewrites are confirmed working
+    ];
+  }
+};
+
+module.exports = nextConfig;
