@@ -75,29 +75,26 @@ const nextConfig = {
    * REWRITES – route /digital-footprint and /trust-profile to the other Vercel apps
    */
   async rewrites() {
-    return [
-      {
-        source: '/digital-footprint',
-        destination: 'https://digital-footprint-scanner.vercel.app/',
-      },
-      {
-        source: '/digital-footprint/:path*',
-        destination: 'https://digital-footprint-scanner.vercel.app/:path*',
-      },
-      {
-        source: '/trust-profile',
-        destination: 'https://digital-trust-profile-9fz3jv02r-linda-masondos-projects.vercel.app/',
-      },
-      {
-        source: '/trust-profile/:path*',
-        destination: 'https://digital-trust-profile-9fz3jv02r-linda-masondos-projects.vercel.app/:path*',
-      },
-      {
-  source: '/test-rewrite',
-  destination: 'https://google.com',
+  return [
+    {
+      source: '/digital-footprint',
+      destination: 'https://digital-footprint-scanner.vercel.app/',
+    },
+    {
+      source: '/digital-footprint/:path*',
+      destination: 'https://digital-footprint-scanner.vercel.app/:path*',
+    },
+    {
+      source: '/trust-profile',
+      destination: 'https://digital-trust-profile.vercel.app/',   // 👈 new URL
+    },
+    {
+      source: '/trust-profile/:path*',
+      destination: 'https://digital-trust-profile.vercel.app/:path*',
+    },
+    {
+      source: '/test-rewrite',
+      destination: 'https://google.com',
+    }
+  ];
 }
-    ];
-  }
-}; // <-- This closing brace was missing!
-
-module.exports = nextConfig;
