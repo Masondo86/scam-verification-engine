@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
 interface Stats {
-  scamsToday: number;
+  scansToday: number;
   highRiskThisWeek: number;
   totalScans: number;
   recentFlaggedDomains: string[];
@@ -72,7 +72,7 @@ export default function LiveStats() {
         {/* ✅ Changed label from "Scams Today" to "Scans Today" */}
         <div className="text-center">
           <div className="text-2xl md:text-3xl font-bold text-indigo-300 drop-shadow-[0_0_10px_rgba(99,102,241,0.3)]">
-            {stats.scamsToday}
+            {stats.scansToday}
           </div>
           <div className="text-xs text-slate-300 font-medium uppercase tracking-wider">Scans Today</div>
         </div>
