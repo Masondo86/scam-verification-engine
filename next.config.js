@@ -76,11 +76,11 @@ const nextConfig = {
     return [
       {
         source: '/digital-footprint',
-        destination: 'https://digital-footprint-scanner.vercel.app/',
+        destination: 'https://digital-footprint-scanner-7ws8y12oh-linda-masondos-projects.vercel.app/',
       },
       {
         source: '/digital-footprint/:path*',
-        destination: 'https://digital-footprint-scanner.vercel.app/:path*',
+        destination: 'https://digital-footprint-scanner-7ws8y12oh-linda-masondos-projects.vercel.app/:path*',
       },
       {
         source: '/trust-profile',
