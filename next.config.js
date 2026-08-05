@@ -76,11 +76,11 @@ const nextConfig = {
     return [
       {
         source: '/digital-footprint',
-        destination: 'https://digital-footprint-scanner-49k0ve8q2-linda-masondos-projects.vercel.app/',
+        destination: 'https://digital-footprint-scanner-kc4ekyzcl-linda-masondos-projects.vercel.app/',
       },
       {
         source: '/digital-footprint/:path*',
-        destination: 'https://digital-footprint-scanner-49k0ve8q2-linda-masondos-projects.vercel.app/:path*',
+        destination: 'https://digital-footprint-scanner-kc4ekyzcl-linda-masondos-projects.vercel.app/:path*',
       },
       {
         source: '/trust-profile',
@@ -90,7 +90,6 @@ const nextConfig = {
         source: '/trust-profile/:path*',
         destination: 'https://digital-trust-profile.vercel.app/:path*',
       },
-      // Remove test-rewrite now that rewrites are confirmed working
     ];
   }
 };
