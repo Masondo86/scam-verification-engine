@@ -75,13 +75,13 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/digital-footprint',
-        destination: 'https://digital-footprint-scanner-kc4ekyzcl-linda-masondos-projects.vercel.app/',
-      },
-      {
-        source: '/digital-footprint/:path*',
-        destination: 'https://digital-footprint-scanner-kc4ekyzcl-linda-masondos-projects.vercel.app/:path*',
-      },
+  source: '/digital-footprint',
+  destination: 'https://digital-footprint-scanner.vercel.app/',
+},
+{
+  source: '/digital-footprint/:path*',
+  destination: 'https://digital-footprint-scanner.vercel.app/:path*',
+},
       {
         source: '/trust-profile',
         destination: 'https://digital-trust-profile.vercel.app/',
