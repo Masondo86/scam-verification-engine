@@ -73,26 +73,41 @@ const nextConfig = {
    * REWRITES – route /digital-footprint and /trust-profile to the other Vercel apps
    */
   async rewrites() {
-  return [
-    // Static assets for DTP — these MUST come first
-    {
-      source: '/_next/static/:path*',
-      destination: 'https://digital-trust-profile.vercel.app/_next/static/:path*',
-    },
-    {
-      source: '/images/:path*',
-      destination: 'https://digital-trust-profile.vercel.app/images/:path*',
-    },
-    // Then your existing rewrites
-    {
-      source: '/trust-profile',
-      destination: 'https://digital-trust-profile.vercel.app/',
-    },
-    {
-      source: '/trust-profile/:path*',
-      destination: 'https://digital-trust-profile.vercel.app/:path*',
-    },
-    // ... other rewrites
-  ];
-},
-}
+    return [
+      // Static assets for DTP – these MUST come first
+      {
+        source: '/_next/static/:path*',
+        destination: 'https://digital-trust-profile.vercel.app/_next/static/:path*',
+      },
+      {
+        source: '/images/:path*',
+        destination: 'https://digital-trust-profile.vercel.app/images/:path*',
+      },
+      // Main DTP route
+      {
+        source: '/trust-profile',
+        destination: 'https://digital-trust-profile.vercel.app/',
+      },
+      {
+        source: '/trust-profile/:path*',
+        destination: 'https://digital-trust-profile.vercel.app/:path*',
+      },
+      // DFS route (add when DFS is ready)
+      {
+        source: '/digital-footprint',
+        destination: 'https://digital-footprint-scanner.vercel.app/',
+      },
+      {
+        source: '/digital-footprint/:path*',
+        destination: 'https://digital-footprint-scanner.vercel.app/:path*',
+      },
+      // Test route to verify rewrites are working
+      {
+        source: '/test-dtp',
+        destination: 'https://digital-trust-profile.vercel.app/',
+      },
+    ];
+  }
+};
+
+module.exports = nextConfig;
