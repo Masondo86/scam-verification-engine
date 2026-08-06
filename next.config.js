@@ -73,25 +73,26 @@ const nextConfig = {
    * REWRITES – route /digital-footprint and /trust-profile to the other Vercel apps
    */
   async rewrites() {
-    return [
-      {
-  source: '/digital-footprint',
-  destination: 'https://digital-footprint-scanner.vercel.app/',
+  return [
+    // Static assets for DTP — these MUST come first
+    {
+      source: '/_next/static/:path*',
+      destination: 'https://digital-trust-profile.vercel.app/_next/static/:path*',
+    },
+    {
+      source: '/images/:path*',
+      destination: 'https://digital-trust-profile.vercel.app/images/:path*',
+    },
+    // Then your existing rewrites
+    {
+      source: '/trust-profile',
+      destination: 'https://digital-trust-profile.vercel.app/',
+    },
+    {
+      source: '/trust-profile/:path*',
+      destination: 'https://digital-trust-profile.vercel.app/:path*',
+    },
+    // ... other rewrites
+  ];
 },
-{
-  source: '/digital-footprint/:path*',
-  destination: 'https://digital-footprint-scanner.vercel.app/:path*',
-},
-      {
-        source: '/trust-profile',
-        destination: 'https://digital-trust-profile.vercel.app/',
-      },
-      {
-        source: '/trust-profile/:path*',
-        destination: 'https://digital-trust-profile.vercel.app/:path*',
-      },
-    ];
-  }
-};
-
-module.exports = nextConfig;
+}
