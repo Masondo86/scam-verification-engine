@@ -25,16 +25,21 @@ const nextConfig = {
 
   async rewrites() {
     return [
-      // ⚠️ STATIC ASSETS – MUST COME FIRST
+      // ✅ STATIC ASSETS – MUST COME FIRST
       {
         source: '/_next/static/:path*',
         destination: 'https://digital-trust-profile.vercel.app/_next/static/:path*',
       },
       {
+        source: '/_next/:path*',                // 👈 CATCH‑ALL – ESSENTIAL
+        destination: 'https://digital-trust-profile.vercel.app/_next/:path*',
+      },
+      {
         source: '/images/:path*',
         destination: 'https://digital-trust-profile.vercel.app/images/:path*',
       },
-      // Main DTP routes
+
+      // ✅ MAIN ROUTES – COME AFTER STATIC ASSETS
       {
         source: '/trust-profile',
         destination: 'https://digital-trust-profile.vercel.app/',
@@ -43,11 +48,11 @@ const nextConfig = {
         source: '/trust-profile/:path*',
         destination: 'https://digital-trust-profile.vercel.app/:path*',
       },
-      // Test route
       {
         source: '/test-dtp',
         destination: 'https://digital-trust-profile.vercel.app/',
       },
+      // Add DFS rewrites later when ready
     ];
   }
 };
