@@ -25,32 +25,18 @@ const nextConfig = {
 
   async rewrites() {
     return [
-      // ✅ STATIC ASSETS – MUST COME FIRST
-      {
-        source: '/_next/static/:path*',
-        destination: 'https://digital-trust-profile.vercel.app/_next/static/:path*',
-      },
-      {
-        source: '/_next/:path*',                // 👈 CATCH‑ALL – ESSENTIAL
-        destination: 'https://digital-trust-profile.vercel.app/_next/:path*',
-      },
-      {
-        source: '/images/:path*',
-        destination: 'https://digital-trust-profile.vercel.app/images/:path*',
-      },
-
-      // ✅ MAIN ROUTES – COME AFTER STATIC ASSETS
+      // Main DTP routes → now using the subdomain
       {
         source: '/trust-profile',
-        destination: 'https://digital-trust-profile.vercel.app/',
+        destination: 'https://trust.checkascam.co.za/',
       },
       {
         source: '/trust-profile/:path*',
-        destination: 'https://digital-trust-profile.vercel.app/:path*',
+        destination: 'https://trust.checkascam.co.za/:path*',
       },
       {
         source: '/test-dtp',
-        destination: 'https://digital-trust-profile.vercel.app/',
+        destination: 'https://trust.checkascam.co.za/',
       },
       // Add DFS rewrites later when ready
     ];
