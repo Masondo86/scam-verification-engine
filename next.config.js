@@ -24,20 +24,15 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
 
   async rewrites() {
-    return [
-      // Main DTP routes → now using the subdomain
-      {
-        source: '/trust-profile',
-        destination: 'https://trust.checkascam.co.za/',
-      },
-      {
-        source: '/trust-profile/:path*',
-        destination: 'https://trust.checkascam.co.za/:path*',
-      },
-      {
-        source: '/test-dtp',
-        destination: 'https://trust.checkascam.co.za/',
-      },
+  return [
+    {
+      source: '/trust-profile',
+      destination: 'https://digital-trust-profile.vercel.app/',
+    },
+    {
+      source: '/trust-profile/:path*',
+      destination: 'https://digital-trust-profile.vercel.app/:path*',
+    },
       // Add DFS rewrites later when ready
     ];
   }
