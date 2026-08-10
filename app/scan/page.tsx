@@ -549,6 +549,7 @@ export default function Page() {
           </>
         )}
 
+                {/* DATA LEAK MODAL – TEMPORARILY DISABLED
         {data && showDataLeakModal && (
           <DataLeakModal
             isOpen={showDataLeakModal}
@@ -556,6 +557,7 @@ export default function Page() {
             scanType={scanType}
           />
         )}
+        */}
       </div>
     </main>
   );
