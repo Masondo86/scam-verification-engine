@@ -33,7 +33,14 @@ const nextConfig = {
       source: '/trust-profile/:path*',
       destination: 'https://digital-trust-profile.vercel.app/:path*',
     },
-      // Add DFS rewrites later when ready
+      {
+      source: '/digital-footprint',
+      destination: 'https://footprint.checkascam.co.za/',
+    },
+    {
+      source: '/digital-footprint/:path*',
+      destination: 'https://footprint.checkascam.co.za/:path*',
+    },
     ];
   }
 };
