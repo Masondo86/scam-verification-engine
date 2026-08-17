@@ -41,6 +41,10 @@ const nextConfig = {
       source: '/digital-footprint/:path*',
       destination: 'https://footprint.checkascam.co.za/:path*',
     },
+    {
+  source: '/test-dfs',
+  destination: 'https://footprint.checkascam.co.za/',
+},
     ];
   }
 };
