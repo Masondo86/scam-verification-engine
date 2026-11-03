@@ -1,8 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { getRateLimitKey, rateLimit } from '@/app/lib/ratelimit';
 
 export const dynamic = 'force-dynamic';
+const MAX_BODY_BYTES = 10_000;
 
 function hashIp(ip: string): string {
   return crypto.createHash('sha256').update(ip).digest('hex');
@@ -20,10 +22,45 @@ export async function POST(req: Request) {
   const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
 
   try {
-    const { type, content } = await req.json();
+    const contentLength = Number(req.headers.get('content-length'));
+    if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
+      return NextResponse.json({ error: 'Request body too large' }, { status: 413 });
+    }
+    const chunks: Uint8Array[] = [];
+    let bodyBytes = 0;
+    if (req.body) {
+      const reader = req.body.getReader();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        bodyBytes += value.byteLength;
+        if (bodyBytes > MAX_BODY_BYTES) {
+          await reader.cancel();
+          return NextResponse.json({ error: 'Request body too large' }, { status: 413 });
+        }
+        chunks.push(value);
+      }
+    }
+    const bodyBuffer = new Uint8Array(bodyBytes);
+    let bodyOffset = 0;
+    for (const chunk of chunks) {
+      bodyBuffer.set(chunk, bodyOffset);
+      bodyOffset += chunk.byteLength;
+    }
+    const body = new TextDecoder().decode(bodyBuffer);
+    let payload: unknown;
+    try {
+      payload = JSON.parse(body);
+    } catch {
+      return NextResponse.json({ error: 'Type and content are required' }, { status: 400 });
+    }
+    if (!payload || typeof payload !== 'object') {
+      return NextResponse.json({ error: 'Type and content are required' }, { status: 400 });
+    }
+    const { type, content } = payload as { type?: unknown; content?: unknown };
 
     // Validate input
-    if (!type || !content || typeof type !== 'string' || typeof content !== 'string') {
+    if (!type || !content || typeof type !== 'string' || typeof content !== 'string' || content.trim().length === 0) {
       return NextResponse.json({ error: 'Type and content are required' }, { status: 400 });
     }
 
@@ -40,57 +77,46 @@ export async function POST(req: Request) {
       }
     }
 
+    const sharedLimit = await rateLimit.limit(getRateLimitKey('spam-report', req), 10, '1 d');
+    if (sharedLimit.unavailable) {
+      return NextResponse.json({ error: 'Rate limiting is temporarily unavailable' }, { status: 503 });
+    }
+    if (!sharedLimit.success) {
+      return NextResponse.json({ error: 'You have reached the daily limit for reports. Please try again tomorrow.' }, { status: 429 });
+    }
+
     // Get client IP
-    const forwardedFor = req.headers.get('x-forwarded-for');
-    const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : '';
+    const ip = process.env.VERCEL === '1'
+      ? req.headers.get('x-vercel-forwarded-for')?.split(',')[0].trim() || ''
+      : '';
     const ipHash = hashIp(ip);
 
-    // Rate limit: one report per (type, content) per IP per 24 hours
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const { count: recentCount, error: countError } = await supabaseAdmin
-      .from('user_reports')
-      .select('*', { count: 'exact', head: true })
-      .eq('type', type)
-      .eq('content', content)
-      .eq('ip_hash', ipHash)
-      .gte('created_at', oneDayAgo.toISOString());
+    // The RPC serializes check-and-insert per IP in one database transaction.
+    const { data: outcome, error: reportError } = await supabaseAdmin.rpc('submit_user_report', {
+      p_type: type,
+      p_content: content,
+      p_ip_hash: ipHash,
+    });
 
-    if (countError) console.error('Rate limit check error:', countError);
-    if (recentCount && recentCount >= 1) {
+    if (reportError) {
+      console.error('Report submission error:', reportError);
+      return NextResponse.json({ error: 'Unable to submit report safely' }, { status: 503 });
+    }
+    if (outcome === 'duplicate') {
       return NextResponse.json(
         { error: 'You have already reported this item in the last 24 hours. Thank you for helping.' },
         { status: 429 }
       );
     }
-
-    // Optional: enforce a daily global limit per IP (e.g., 10 reports/day)
-    const { count: totalToday, error: totalError } = await supabaseAdmin
-      .from('user_reports')
-      .select('*', { count: 'exact', head: true })
-      .eq('ip_hash', ipHash)
-      .gte('created_at', oneDayAgo.toISOString());
-
-    if (totalError) console.error('Daily limit check error:', totalError);
-    if (totalToday && totalToday >= 10) {
+    if (outcome === 'daily_limit') {
       return NextResponse.json(
         { error: 'You have reached the daily limit for reports. Please try again tomorrow.' },
         { status: 429 }
       );
     }
-
-    // Insert the report
-    const { error: insertError } = await supabaseAdmin
-      .from('user_reports')
-      .insert({
-        type,
-        content,
-        ip_hash: ipHash,
-        created_at: new Date(),
-      });
-
-    if (insertError) {
-      console.error('Insert error:', insertError);
-      return NextResponse.json({ error: 'Failed to submit report' }, { status: 500 });
+    if (outcome !== 'accepted') {
+      console.error('Unexpected report submission outcome:', outcome);
+      return NextResponse.json({ error: 'Unable to submit report safely' }, { status: 503 });
     }
 
     return NextResponse.json({ success: true, message: 'Thank you for reporting.' });
