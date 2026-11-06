@@ -1,42 +1,46 @@
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
+import { createHash } from 'crypto';
 
-// Check if Redis is configured
-const isRedisConfigured = 
-  process.env.UPSTASH_REDIS_REST_URL && 
-  process.env.UPSTASH_REDIS_REST_TOKEN;
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+const redis = redisUrl && redisToken ? new Redis({ url: redisUrl, token: redisToken }) : null;
+const limiters = new Map<string, Ratelimit>();
 
-// Only create Redis instance if configured
-const redis = isRedisConfigured 
-  ? new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL!,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-    })
-  : null;
+type RateWindow = `${number} ${'ms' | 's' | 'm' | 'h' | 'd'}`;
 
-// Create rate limiter if Redis is available
-const rateLimiter = redis 
-  ? new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(10, "1 m"), // 10 scans / minute / IP
-    })
-  : null;
+function getLimiter(limit: number, window: RateWindow) {
+  const key = `${limit}:${window}`;
+  let limiter = limiters.get(key);
+  if (!limiter && redis) {
+    limiter = new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(limit, window) });
+    limiters.set(key, limiter);
+  }
+  return limiter;
+}
+
+// Vercel overwrites this header at its edge. On other platforms, use one
+// shared bucket instead of trusting caller-controlled forwarding headers.
+export function getRateLimitKey(scope: string, request: Request) {
+  const platformIp = process.env.VERCEL === '1'
+    ? request.headers.get('x-vercel-forwarded-for')?.split(',')[0].trim()
+    : null;
+  const ipKey = platformIp
+    ? createHash('sha256').update(platformIp).digest('hex')
+    : 'shared';
+  return `${scope}:${ipKey}`;
+}
 
 export const rateLimit = {
-  limit: async (ip: string) => {
-    // If Redis not configured, allow all requests (free tier mode)
-    if (!rateLimiter) {
-      console.warn('Rate limiting disabled - Redis not configured');
-      return { success: true };
-    }
-
-    // Use rate limiter
+  limit: async (key: string, requests = 10, window: RateWindow = '1 m'): Promise<{ success: boolean; unavailable: boolean }> => {
     try {
-      return await rateLimiter.limit(ip);
+      const limiter = getLimiter(requests, window);
+      if (!limiter) return { success: false, unavailable: true };
+      const result = await limiter.limit(key);
+      return { success: result.success, unavailable: false };
     } catch (error) {
       console.error('Rate limiting error:', error);
-      // If rate limiter fails, allow the request
-      return { success: true };
+      return { success: false, unavailable: true };
     }
-  }
+  },
 };
