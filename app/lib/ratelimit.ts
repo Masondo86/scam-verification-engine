@@ -2,9 +2,7 @@ import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { createHash } from 'crypto';
 
-const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
-const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
-const redis = redisUrl && redisToken ? new Redis({ url: redisUrl, token: redisToken }) : null;
+let redis: Redis | null | undefined;
 const limiters = new Map<string, Ratelimit>();
 
 type RateWindow = `${number} ${'ms' | 's' | 'm' | 'h' | 'd'}`;
@@ -12,7 +10,13 @@ type RateWindow = `${number} ${'ms' | 's' | 'm' | 'h' | 'd'}`;
 function getLimiter(limit: number, window: RateWindow) {
   const key = `${limit}:${window}`;
   let limiter = limiters.get(key);
-  if (!limiter && redis) {
+  if (!limiter) {
+    if (redis === undefined) {
+      const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+      const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+      redis = redisUrl && redisToken ? new Redis({ url: redisUrl, token: redisToken }) : null;
+    }
+    if (!redis) return undefined;
     limiter = new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(limit, window) });
     limiters.set(key, limiter);
   }
